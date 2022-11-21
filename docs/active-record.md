@@ -8,7 +8,7 @@ Enhanced Active Record.
 
 namespace Model;
 
-use Sim\ADOdb\ActiveRecord;
+use Simsoft\ADOdb\ActiveRecord;
 
 class User extends ActiveRecord
 {

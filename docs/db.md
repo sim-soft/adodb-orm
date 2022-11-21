@@ -10,7 +10,7 @@ require_once "vendor/autoload.php";
 require_once "vendor/adodb/adodb-php/adodb.inc.php";
 require_once "vendor/adodb/adodb-php/adodb-active-record.inc.php";
 
-use Sim\ADOdb\DB;
+use Simsoft\ADOdb\DB;
 
 $config = [
     'mysql' => [

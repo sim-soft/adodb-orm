@@ -21,8 +21,8 @@ require_once "vendor/autoload.php";
 require_once "vendor/adodb/adodb-php/adodb.inc.php";
 require_once "vendor/adodb/adodb-php/adodb-active-record.inc.php";
 
-use Sim\ADOdb\DB;
-use Sim\ADOdb\Query;
+use Simsoft\ADOdb\DB;
+use Simsoft\ADOdb\Query;
 
 $config = [
     'mysql' => [
@@ -78,8 +78,8 @@ require_once "vendor/autoload.php";
 require_once "vendor/adodb/adodb-php/adodb.inc.php";
 require_once "vendor/adodb/adodb-php/adodb-active-record.inc.php";
 
-use Sim\ADOdb\DB;
-use Sim\ADOdb\Query;
+use Simsoft\ADOdb\DB;
+use Simsoft\ADOdb\Query;
 
 $config = [
     'mysql' => [
@@ -107,7 +107,7 @@ while ($row = $result->fetchRow()) {
 
 namespace Model;
 
-use Sim\ADOdb\ActiveRecord;
+use Simsoft\ADOdb\ActiveRecord;
 
 /**
  * Class User 
@@ -127,7 +127,7 @@ require_once "vendor/autoload.php";
 require_once "vendor/adodb/adodb-php/adodb.inc.php";
 require_once "vendor/adodb/adodb-php/adodb-active-record.inc.php";
 
-use Sim\ADOdb\DB;
+use Simsoft\ADOdb\DB;
 use Model\User;
 
 $config = [

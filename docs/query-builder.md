@@ -5,7 +5,7 @@ Basic usage of query builder.
 ## Generate SQL statement
 
 ```php
-use Sim\ADOdb\Query;
+use Simsoft\ADOdb\Query;
 
 // output: SELECT * FROM user
 echo Query::from('user');
@@ -115,8 +115,8 @@ echo Query::from('invoice')->where('status', 'unpaid')->sum('amount');
 # Retrieve Data
 
 ```php
-use Sim\ADOdb\DB;
-use Sim\ADOdb\Query;
+use Simsoft\ADOdb\DB;
+use Simsoft\ADOdb\Query;
 use Model\User;
 
 // use "mysql" connection and retrieve data in array
