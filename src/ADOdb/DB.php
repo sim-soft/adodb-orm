@@ -146,8 +146,8 @@ final class DB
      * The callable must return a bool value.
      *
      * DB::use('connection')->transaction(function(){
-     *  DB::insert('table', [...]);
-     *  DB::update('table', [...], 'id=1');
+     *  // inserts or updates
+     *  
      *  return true;
      * });
      *
@@ -176,8 +176,8 @@ final class DB
      * The callable must return a bool value.
      *
      * DB::use('connection')->transaction(function(){
-     *  DB::insert('table', [...]);
-     *  DB::update('table', [...], 'id=1');
+     *  // inserts or updates 
+     *  
      *  return true.
      * });
      *
@@ -247,6 +247,13 @@ final class DB
                     foreach ($execute as $sql) {
                         $db->execute($sql);
                     }
+                }
+
+                /**
+                 * @var bool $debug
+                 */
+                if (!empty($debug)) {
+                    $db->debug = $debug;
                 }
 
                 \ADODB_Active_Record::SetDatabaseAdapter($db, $name);
