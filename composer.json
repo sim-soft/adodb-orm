@@ -1,0 +1,25 @@
+{
+    "name": "simsoft/adodb-orm",
+    "description": "ORM wrapper for ADOdb PHP",
+    "keywords": ["adodb", "orm", "active-record", "sencillez", "php"],
+    "type": "library",
+    "require": {
+        "php": "^7.4|^8",
+        "adodb/adodb-php": "^5.22"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.5"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Simsoft\\ADOdb\\": "src/ADOdb"
+        }
+    },
+    "authors": [
+        {
+            "name": "vzangloo",
+            "email": "vzangloo@gmail.com"
+        }
+    ]
+}
