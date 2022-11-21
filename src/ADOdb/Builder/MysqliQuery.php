@@ -41,16 +41,17 @@ class MysqliQuery extends ActiveQuery
      *
      * Only can merge if the other query has the same table/ alias.
      *
-     * @param Query $query the other Query object
+     * @param ActiveQuery $query the other Query object
+     * @param string $logicalOperator The logical operator. Default 'AND'.
      */
-    public function merge(ActiveQuery $query): self
+    public function merge(ActiveQuery $query, string $logicalOperator = 'AND'): self
     {
         if ($this->table === $query->getTable()) {
             $properties = ['selects', 'conditions', 'groupBys', 'havings', 'orderBys', 'joins', 'binds'];
             foreach ($properties as $property) {
                 if (!empty($query->{$property})) {
                     if (in_array($property, ['conditions', 'havings']) && !empty($this->{$property})) {
-                        $this->{$property}[] = 'AND';
+                        $this->{$property}[] = $logicalOperator;
                     }
                     $this->{$property} = array_merge($this->{$property}, $query->{$property});
                 }
@@ -58,6 +59,18 @@ class MysqliQuery extends ActiveQuery
         }
 
         return $this;
+    }
+
+    /**
+     * Merge with other query object.
+     * 
+     * Prepand 'OR' to the query.
+     * 
+     * @param ActiveQuery $query the other Query object
+     */
+    public function orMerge(ActiveQuery $query): self
+    {
+        return $this->merge($query, 'OR');
     }
 
     /**

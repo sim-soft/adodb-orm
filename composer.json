@@ -21,5 +21,8 @@
             "name": "vzangloo",
             "email": "vzangloo@gmail.com"
         }
-    ]
+    ],
+    "scripts": {
+        "test": "phpunit tests"
+    }
 }

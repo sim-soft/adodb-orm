@@ -112,6 +112,24 @@ echo Query::from('invoice')->where('status', 'unpaid')->sum('amount');
 
 ```
 
+# Merge Query
+
+```php
+//IMPORTANT: Merge requirements, the two queries MUST have same table name.
+
+$query1 = Query::from('user)->where('age', '>=', 25)->orderBy('age');
+echo Query::from('user')->where('gender', 'm')->merge($query1)->orderBy('name');
+
+// output:
+// SELECT * FROM user WHERE user.gender = 'm' AND user.age >= 25 ORDER BY user.age ASC, user.name ASC
+
+// OR merge by calling orMerge() method.
+$query1 = Query::from('user)->where('age', '>=', 25)->orderBy('age');
+echo Query::from('user')->where('gender', 'm')->orMerge($query1)->orderBy('name');
+// output:
+// SELECT * FROM user WHERE user.gender = 'm' OR user.age >= 25 ORDER BY user.age ASC, user.name ASC
+```
+
 # Retrieve Data
 
 ```php
