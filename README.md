@@ -39,6 +39,7 @@ $config = [
         'user' => 'username',
         'pass' => 'password',
         'schema' => 'database_name',
+        'debug' => true,
         'execute' => [ // run once when the connection is successful.
             "SET @@session.time_zone='+00:00'",
         ],
@@ -47,7 +48,7 @@ $config = [
 
 DB::init($config);
 
-$result = DB::use('mysql')->execute('SELECT * FROM table1 WHERE attr1 = ? AND attr2 = 2', ['value1', 'value2']);
+$result = DB::use('mysql')->execute('SELECT * FROM table1 WHERE attr1 = ? AND attr2 = ?', ['value1', 'value2']);
 
 while ($row = $result->fetchRow()) {
     print_r($row);
@@ -57,8 +58,8 @@ while ($row = $result->fetchRow()) {
 $success = DB::use('mysql')->insert('table', ['attr1' => 'value1', 'attr2' => 'value2']);
 
 // Update an record.
-$success = DB::use('mysql')->update('table', , ['attr1' => 'value1', 'attr2' => 'value2'], 'id=2');
-$success = DB::use('mysql')->update('table', , ['attr1' => 'value1', 'attr2' => 'value2'], Query::where('id', 2));
+$success = DB::use('mysql')->update('table', ['attr1' => 'value1', 'attr2' => 'value2'], 'id=2');
+$success = DB::use('mysql')->update('table', ['attr1' => 'value1', 'attr2' => 'value2'], Query::where('id', 2));
 
 // Return result in array
 $result = DB::use('mysql')->getArray('SELECT * FROM user WHERE name LIKE ?', ['%john%']);
@@ -151,7 +152,7 @@ foreach ($users as $user) {
 
 ```
 
-## Documents
+## Documentations
 1. [DB class](docs/db.md)
 2. [Query Builder](docs/query-builder.md)
 3. [Active Record](docs/active-record.md)
