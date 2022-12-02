@@ -571,25 +571,46 @@ class MysqliQuery extends ActiveQuery
     ): self {
         $attribute = $this->sqlField($attribute);
 
-        if ($startDate && $endDate) {
-            $this->binds[] = $startDate;
-            $this->binds[] = $endDate;
-
-            return $this->onCondition("{$attribute} >= {$this->placeHolder} AND {$attribute} < {$this->placeHolder}", $logicalOperator);
+        if ($is) {
+            if ($startDate && $endDate) {
+                $this->binds[] = $startDate;
+                $this->binds[] = $endDate;
+    
+                return $this->onCondition("{$attribute} >= {$this->placeHolder} AND {$attribute} < {$this->placeHolder}", $logicalOperator);
+            }
+    
+            if ($startDate && $endDate === null) {
+                $this->binds[] = $startDate;
+    
+                return $this->onCondition("{$attribute} >= {$this->placeHolder}", $logicalOperator);
+            }
+    
+            if ($startDate === null && $endDate) {
+                $this->binds[] = $endDate;
+    
+                return $this->onCondition("{$attribute} < {$this->placeHolder}", $logicalOperator);
+            }
+        } else {
+            if ($startDate && $endDate) {
+                $this->binds[] = $startDate;
+                $this->binds[] = $endDate;
+    
+                return $this->onCondition("{$attribute} < {$this->placeHolder} AND {$attribute} >= {$this->placeHolder}", $logicalOperator);
+            }
+    
+            if ($startDate && $endDate === null) {
+                $this->binds[] = $startDate;
+    
+                return $this->onCondition("{$attribute} < {$this->placeHolder}", $logicalOperator);
+            }
+    
+            if ($startDate === null && $endDate) {
+                $this->binds[] = $endDate;
+    
+                return $this->onCondition("{$attribute} >= {$this->placeHolder}", $logicalOperator);
+            }
         }
-
-        if ($startDate && $endDate === null) {
-            $this->binds[] = $startDate;
-
-            return $this->onCondition("{$attribute} >= {$this->placeHolder}", $logicalOperator);
-        }
-
-        if ($startDate === null && $endDate) {
-            $this->binds[] = $endDate;
-
-            return $this->onCondition("{$attribute} < {$this->placeHolder}", $logicalOperator);
-        }
-
+        
         return $this;
     }
 
@@ -602,7 +623,31 @@ class MysqliQuery extends ActiveQuery
      */
     public function orBetweenDate(string $attribute, ?string $startDate = null, ?string $endDate = null): self
     {
-        return $this->betweenDate($attribute, $startDate, $endDate, 'OR');
+        return $this->betweenDate($attribute, $startDate, $endDate, true, 'OR');
+    }
+
+    /**
+     * Not between date condition.
+     *
+     * @param string      $attribute the attribute name
+     * @param null|string $startDate the start date value
+     * @param null|string $endDate   the end date value
+     */
+    public function notBetweenDate(string $attribute, ?string $startDate = null, ?string $endDate = null): self
+    {
+        return $this->betweenDate($attribute, $startDate, $endDate, false);
+    }
+
+    /**
+     * Or not between date condition.
+     *
+     * @param string      $attribute the attribute name
+     * @param null|string $startDate the start date value
+     * @param null|string $endDate   the end date value
+     */
+    public function orNotBetweenDate(string $attribute, ?string $startDate = null, ?string $endDate = null): self
+    {
+        return $this->betweenDate($attribute, $startDate, $endDate, false, 'OR');
     }
 
     /**
