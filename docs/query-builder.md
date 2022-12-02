@@ -87,8 +87,8 @@ echo Query::from('user')
 // output: SELECT * FROM user WHERE user.status = 'active' AND ( user.gender != 'male' or user.age > 25 );
 echo Query::from('user')
             ->where('status', 'active')
-            ->where(function() {
-                $this
+            ->where(function($query) {
+                $query
                     ->not('gender', 'male')
                     ->orWhere('age', '>', 25);
             });
@@ -96,8 +96,8 @@ echo Query::from('user')
 // output: SELECT * FROM user WHERE user.status = 'active' OR ( user.gender != 'male' or user.age > 25 );
 echo Query::from('user')
             ->where('status', 'active')
-            ->orWhere(function() {
-                $this
+            ->orWhere(function($query) {
+                $query
                     ->not('gender', 'male')
                     ->orWhere('age', '>', 25);
             });            
