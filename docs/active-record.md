@@ -92,25 +92,29 @@ echo $user->last_name;
 print_r($user->getAttributes());
 
 // Get one record
-$user = User::query()->where('age', '>=', 25)->findOne():
+$user = User::query()->where('age', '>=', 25)->findOne();
+echo $user->getKey();   // display primary key value
+echo $user->first_name;
+echo $user->last_name;
 
 // Get all users records
-$users = User::query()->where('age', '>=', 25)->findAll():
+$users = User::query()->where('age', '>=', 25)->findAll();
 foreach($users as $user) {
     echo $user->first_name;
     echo $user->last_name;
 }
 
 // Get total user.
-echo User::query()->where('age', '>=', 25)->count();
+$count = User::query()->where('age', '>=', 25)->count();
+echo $count;
 
 // Other aggregation query
-echo User::query()->where('age', '>=', 25)->max('dob');
-echo User::query()->where('age', '>=', 25)->min('dob');
+$max = User::query()->where('age', '>=', 25)->max('dob');
+$min = User::query()->where('age', '>=', 25)->min('dob');
 ```
 
 ## Debug
 ```php
 // Enable debug mode by calling debug() method
-$users = User::query()->where('age', '>=', 25)->debug()->findAll():
+$users = User::query()->where('age', '>=', 25)->debug()->findAll();
 ```
