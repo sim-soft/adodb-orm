@@ -4,7 +4,7 @@
     "keywords": ["adodb", "orm", "active-record", "sencillez", "php"],
     "type": "library",
     "require": {
-        "php": "^7.4|^8",
+        "php": "^8",
         "adodb/adodb-php": "^5.22"
     },
     "require-dev": {

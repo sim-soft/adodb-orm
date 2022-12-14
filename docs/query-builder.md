@@ -42,7 +42,7 @@ echo Query::from('user')
 
             ->like('nickname', '%john%')    // AND user.nickname LIKE '%john%'
             ->orLike('nickname', '%john%')  // OR user.nickname LIKE '%john%'
-            ->notLike('nickname', '%john%') // AND user.nickname NOT LIKE '%john%'            
+            ->notLike('nickname', '%john%') // AND user.nickname NOT LIKE '%john%'
             ->orNotLike('nickname', '%john%') // OR user.nickname NOT LIKE '%john%'
 
             ->between('age', 25, 40)        // AND user.age BETWEEN 25 AND 40
@@ -78,6 +78,10 @@ echo Query::from('user')
 
         ->orderByRaw('{role} ASC, {gender} DESC, {profile.name} ASC') // ORDER BY user.role ASC, user.gender DESC, profile.name ASC
 
+        ->having('age', 1)          // HAVING user.age = 1
+        ->having('age', '>', 10)    // HAVING user.age > 10
+        ->havingRaw('COUNT({age}) > 10') // HAVING COUNT(user.age) > 10
+
         ->limit(20)                     // LIMIT 20
         ->limit(20, 1);                 // LIMIT 1, 20
 ```
@@ -100,7 +104,7 @@ echo Query::from('user')
                 $query
                     ->not('gender', 'male')
                     ->orWhere('age', '>', 25);
-            });            
+            });
 ```
 
 ## Join Table
@@ -117,7 +121,7 @@ echo Query::select('first_name', '{r.name}')
             ->join('role AS r', ['id' => 'role_id']);
 
 // Using table alias
-// output SELECT u.first_name, r.name FROM user u 
+// output SELECT u.first_name, r.name FROM user u
 //    INNER JOIN role r ON r.id = u.role_id
 //    LEFT JOIN status s ON s.id = u.status_id;
 echo Query::select('first_name', '{r.name}')
@@ -193,7 +197,7 @@ print_r($array);
 1 => array('emp_no' => 1001,
            'emp_name' => 'Fred Jones',
            'hire_date' => '2013-11-01'
-           ),            
+           ),
 2 => array('emp_no' => 1002,
            'emp_name' => 'Arthur Dent',
            'hire_date' => '2010-09-21'

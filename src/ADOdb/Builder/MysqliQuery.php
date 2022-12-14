@@ -18,13 +18,13 @@ class MysqliQuery extends ActiveQuery
     /** @var array The query group by */
     public array $groupBys = [];
 
-    /** @var array The query havings */
-    public array $havings = [];
+    /** @var array The query having */
+    public array $having = [];
 
     /** @var array The query order */
     public array $orderBys = [];
 
-    /** @var array Jointed relateionship */
+    /** @var array Jointed relationship */
     public array $joins = [];
 
     /** @var null|string The table alias */
@@ -47,10 +47,10 @@ class MysqliQuery extends ActiveQuery
     public function merge(ActiveQuery $query, string $logicalOperator = 'AND'): self
     {
         if ($this->table === $query->getTable()) {
-            $properties = ['selects', 'conditions', 'groupBys', 'havings', 'orderBys', 'joins', 'binds'];
+            $properties = ['selects', 'conditions', 'groupBys', 'having', 'orderBys', 'joins', 'binds'];
             foreach ($properties as $property) {
                 if (!empty($query->{$property})) {
-                    if (in_array($property, ['conditions', 'havings']) && !empty($this->{$property})) {
+                    if (in_array($property, ['conditions', 'having']) && !empty($this->{$property})) {
                         $this->{$property}[] = $logicalOperator;
                     }
                     $this->{$property} = array_merge($this->{$property}, $query->{$property});
@@ -63,9 +63,9 @@ class MysqliQuery extends ActiveQuery
 
     /**
      * Merge with other query object.
-     * 
-     * Prepand 'OR' to the query.
-     * 
+     *
+     * Prepend 'OR' to the query.
+     *
      * @param ActiveQuery $query the other Query object
      */
     public function orMerge(ActiveQuery $query): self
@@ -75,18 +75,18 @@ class MysqliQuery extends ActiveQuery
 
     /**
      * Is the current query has conditions
-     * 
+     *
      * @return bool
      */
     public function hasConditions(): bool
     {
-        return !(empty($this->conditions) && empty($this->groupBys) && empty($this->havings) && empty($this->orderBys));
+        return !(empty($this->conditions) && empty($this->groupBys) && empty($this->having) && empty($this->orderBys));
     }
 
     /**
      * {@inheritdoc}
      */
-    public function from(mixed $table): self
+    public function from(string|array $table): self
     {
         if (is_array($table)) {
             $this->alias = array_key_first($table);
@@ -112,20 +112,26 @@ class MysqliQuery extends ActiveQuery
     /**
      * Join table.
      *
-     * @param string        $table The table name
+     * @param string|array  $table The table name
      * @param array<string> $on    The matching attributes. ['join_table_attribute' => 'main_table_attribute']
      * @param string        $type  Join type. LEFT, RIGHT, INNER, OUTER, etc
      */
-    public function join(string $table, array $on = [], string $type = 'INNER'): self
+    public function join(string|array $table, array $on = [], string $type = 'INNER'): self
     {
+        if (is_array($table)) {
+            $alias = array_key_first($table);
+            $subQuery = current($table);
+            $table = "({$subQuery}) AS {$alias}";
+        } else {
+            $expressions = explode(' ', trim($table));
+            $table = $expressions[0];
+            $alias = end($expressions);
+        }
+
         $join = $type ? strtoupper($type) . ' JOIN' : 'JOIN';
 
         $foreignKey = array_key_first($on);
         $localKey = current($on);
-
-        $expressions = explode(' ', trim($table));
-        $table = $expressions[0];
-        $alias = end($expressions);
 
         if ($table === $alias) {
             $this->joins[] = "{$join} `{$table}` ON `{$table}`.`{$foreignKey}` = " . $this->qualifier($localKey);
@@ -139,10 +145,10 @@ class MysqliQuery extends ActiveQuery
     /**
      * Cross join table.
      *
-     * @param string        $table the join table
+     * @param string|array  $table the join table
      * @param array<string> $on    The matching attributes. ['join_table_attribute' => 'main_table_attribute']
      */
-    public function crossJoin(string $table, array $on = []): self
+    public function crossJoin(string|array $table, array $on = []): self
     {
         return $this->join($table, $on, 'CROSS');
     }
@@ -150,10 +156,10 @@ class MysqliQuery extends ActiveQuery
     /**
      * Left join table.
      *
-     * @param string        $table the join table
+     * @param string|array  $table the join table
      * @param array<string> $on    The matching attributes. ['join_table_attribute' => 'main_table_attribute']
      */
-    public function leftJoin(string $table, array $on = []): self
+    public function leftJoin(string|array $table, array $on = []): self
     {
         return $this->join($table, $on, 'LEFT');
     }
@@ -161,10 +167,10 @@ class MysqliQuery extends ActiveQuery
     /**
      * Right join table.
      *
-     * @param string        $table the join table
+     * @param string|array  $table the join table
      * @param array<string> $on    The matching attributes. ['join_table_attribute' => 'main_table_attribute']
      */
-    public function rightJoin(string $table, array $on = []): self
+    public function rightJoin(string|array $table, array $on = []): self
     {
         return $this->join($table, $on, 'RIGHT');
     }
@@ -231,12 +237,12 @@ class MysqliQuery extends ActiveQuery
     /**
      * Select statement.
      *
-     * @param array<mixed> $attributes the list of attribute value to be select
+     * @param array $attributes the list of attribute value to be select
      */
-    public function select(...$attrbutes): self
+    public function select(...$attributes): self
     {
-        foreach ($attrbutes as $attrbute) {
-            $this->selects[] = $this->sqlField($attrbute);
+        foreach ($attributes as $attribute) {
+            $this->selects[] = $this->sqlField($attribute);
         }
 
         return $this;
@@ -246,6 +252,7 @@ class MysqliQuery extends ActiveQuery
      * Select raw statement.
      *
      * @param string $sql the raw select statement
+     * @return $this
      */
     public function selectRaw(string $sql): self
     {
@@ -258,7 +265,7 @@ class MysqliQuery extends ActiveQuery
      * Raw condition.
      *
      * @param string       $sql             the raw SQL query statement
-     * @param array<mixed> $binds           the bind values for the query statement
+     * @param array        $binds           the bind values for the query statement
      * @param string       $logicalOperator The logical operator. Default: 'AND'.
      */
     public function whereRaw(string $sql, array $binds = [], string $logicalOperator = 'AND'): self
@@ -274,7 +281,7 @@ class MysqliQuery extends ActiveQuery
      * Or raw condition.
      *
      * @param string       $sql   the raw SQL query statement
-     * @param array<mixed> $binds the bind values for the query statement
+     * @param array        $binds the bind values for the query statement
      */
     public function orWhereRaw(string $sql, array $binds = []): self
     {
@@ -286,13 +293,13 @@ class MysqliQuery extends ActiveQuery
      *
      * @param callable|string $attribute       the attribute
      * @param mixed           $operator        the comparison operator or the attribute value
-     * @param null|mixed      $value           the value for the attribute
+     * @param mixed           $value           the value for the attribute
      * @param string          $logicalOperator The logical operator. Default: 'AND'.
      */
     public function where(
         string|callable $attribute,
         ?string $operator = '=',
-        $value = null,
+        mixed $value = null,
         string $logicalOperator = 'AND'
     ): self {
         if (!is_string($attribute) && is_callable($attribute)) {
@@ -322,7 +329,7 @@ class MysqliQuery extends ActiveQuery
      * @param mixed  $operator  the comparison operator or the attribute value
      * @param mixed  $value     the value for the attribute
      */
-    public function orWhere(string|callable $attribute, ?string $operator = '=', $value = null): self
+    public function orWhere(string|callable $attribute, ?string $operator = '=', mixed $value = null): self
     {
         return $this->where($attribute, $operator, $value, 'OR');
     }
@@ -332,10 +339,12 @@ class MysqliQuery extends ActiveQuery
      *
      * @param string $attribute the attribute name
      * @param mixed  $value
+     * @param string $logicalOperator The logical operator. Default: 'AND'.
+     * @return $this
      */
-    public function not(string $attribute, $value): self
+    public function not(string $attribute, mixed $value, string $logicalOperator = 'AND'): self
     {
-        return $this->where($attribute, '!=', $value);
+        return $this->where($attribute, '!=', $value, $logicalOperator);
     }
 
     /**
@@ -344,7 +353,7 @@ class MysqliQuery extends ActiveQuery
      * @param string $attribute the attribute name
      * @param mixed  $value     the value for the attribute
      */
-    public function orNot(string $attribute, $value): self
+    public function orNot(string $attribute, mixed $value): self
     {
         return $this->not($attribute, $value, 'OR');
     }
@@ -363,7 +372,7 @@ class MysqliQuery extends ActiveQuery
     /**
      * Or is null condition.
      *
-     * @param string $attrbute the attribute name
+     * @param string $attribute the attribute name
      */
     public function orIsNull(string $attribute): self
     {
@@ -395,7 +404,7 @@ class MysqliQuery extends ActiveQuery
      * In condition.
      *
      * @param string       $attribute       the attribute name
-     * @param array<mixed> $values          the array of values for the query
+     * @param array        $values          the array of values for the query
      * @param string       $logicalOperator The logical operator. Either 'AND' or 'OR'.
      */
     public function in(string $attribute, array $values, string $logicalOperator = 'AND'): self
@@ -414,7 +423,7 @@ class MysqliQuery extends ActiveQuery
      * Or in condition.
      *
      * @param string       $attribute the attribute name
-     * @param array<mixed> $values    the array of values for the query
+     * @param array        $values    the array of values for the query
      */
     public function orIn(string $attribute, array $values): self
     {
@@ -425,7 +434,7 @@ class MysqliQuery extends ActiveQuery
      * Not in condition.
      *
      * @param string       $attribute       the attribute name
-     * @param array<mixed> $values          the array of values for the query
+     * @param array        $values          the array of values for the query
      * @param string       $logicalOperator The logical operator. Either 'AND' or 'OR'.
      */
     public function notIn(string $attribute, array $values, string $logicalOperator = 'AND'): self
@@ -444,7 +453,7 @@ class MysqliQuery extends ActiveQuery
      * Or not in condition.
      *
      * @param string       $attribute the attribute name
-     * @param array<mixed> $values    the array of values for the query
+     * @param array        $values    the array of values for the query
      */
     public function orNotIn(string $attribute, array $values): self
     {
@@ -509,7 +518,7 @@ class MysqliQuery extends ActiveQuery
      * @param bool   $is              determine the comparison operator
      * @param string $logicalOperator The logical operator. Either 'AND' or 'OR'
      */
-    public function between(string $attribute, $start, $end, bool $is = true, string $logicalOperator = 'AND'): self
+    public function between(string $attribute, mixed $start, mixed $end, bool $is = true, string $logicalOperator = 'AND'): self
     {
         $this->binds[] = $start;
         $this->binds[] = $end;
@@ -525,7 +534,7 @@ class MysqliQuery extends ActiveQuery
      * @param mixed  $start     the start value
      * @param mixed  $end       the end value
      */
-    public function orBetween(string $attribute, $start, $end): self
+    public function orBetween(string $attribute, mixed $start, mixed $end): self
     {
         return $this->between($attribute, $start, $end, true, 'OR');
     }
@@ -537,7 +546,7 @@ class MysqliQuery extends ActiveQuery
      * @param mixed  $start     the start value
      * @param mixed  $end       the end value
      */
-    public function notBetween(string $attribute, $start, $end): self
+    public function notBetween(string $attribute, mixed $start, mixed $end): self
     {
         return $this->between($attribute, $start, $end, false);
     }
@@ -549,7 +558,7 @@ class MysqliQuery extends ActiveQuery
      * @param mixed  $start     the start value
      * @param mixed  $end       the end value
      */
-    public function orNotBetween(string $attribute, $start, $end): self
+    public function orNotBetween(string $attribute, mixed $start, mixed $end): self
     {
         return $this->between($attribute, $start, $end, false, 'OR');
     }
@@ -575,42 +584,42 @@ class MysqliQuery extends ActiveQuery
             if ($startDate && $endDate) {
                 $this->binds[] = $startDate;
                 $this->binds[] = $endDate;
-    
+
                 return $this->onCondition("{$attribute} >= {$this->placeHolder} AND {$attribute} < {$this->placeHolder}", $logicalOperator);
             }
-    
+
             if ($startDate && $endDate === null) {
                 $this->binds[] = $startDate;
-    
+
                 return $this->onCondition("{$attribute} >= {$this->placeHolder}", $logicalOperator);
             }
-    
+
             if ($startDate === null && $endDate) {
                 $this->binds[] = $endDate;
-    
+
                 return $this->onCondition("{$attribute} < {$this->placeHolder}", $logicalOperator);
             }
         } else {
             if ($startDate && $endDate) {
                 $this->binds[] = $startDate;
                 $this->binds[] = $endDate;
-    
+
                 return $this->onCondition("{$attribute} < {$this->placeHolder} AND {$attribute} >= {$this->placeHolder}", $logicalOperator);
             }
-    
+
             if ($startDate && $endDate === null) {
                 $this->binds[] = $startDate;
-    
+
                 return $this->onCondition("{$attribute} < {$this->placeHolder}", $logicalOperator);
             }
-    
+
             if ($startDate === null && $endDate) {
                 $this->binds[] = $endDate;
-    
+
                 return $this->onCondition("{$attribute} >= {$this->placeHolder}", $logicalOperator);
             }
         }
-        
+
         return $this;
     }
 
@@ -719,8 +728,8 @@ class MysqliQuery extends ActiveQuery
      * $this->groupBy('attribute');                 // GROUP BY table.attribute.
      * $this->groupBy('attribute', '!p.attribute'); // GROUP BY table.attribute, p.attribute
      *
-     * @param array<mixed>|string $attribute the attribute
-     * @param string              $direction the order direction for the attribute
+     * @param array $attributes the attribute
+     * @return $this
      */
     public function groupBy(...$attributes): self
     {
@@ -728,6 +737,38 @@ class MysqliQuery extends ActiveQuery
             $this->groupBys[] = $this->sqlField($name);
         }
 
+        return $this;
+    }
+
+    /**
+     * Having clause
+     *
+     * @param string $attribute The attribute
+     * @param string|null $operator The comparison operator or the attribute value
+     * @param mixed|null $value The value for the attribute
+     * @return $this
+     */
+    public function having(string $attribute, ?string $operator = '=', mixed $value = null): self
+    {
+        if ($value === null && $operator != '=') {
+            $value = $operator;
+            $operator = '=';
+        }
+
+        $this->having[] = "{$this->sqlField($attribute)} {$operator} {$this->placeHolder}";
+        $this->binds[] = $value;
+        return $this;
+    }
+
+    /**
+     * Having raw statement
+     *
+     * @param string $sql The raw having statement
+     * @return $this
+     */
+    public function havingRaw(string $sql): self
+    {
+        $this->having[] = $sql;
         return $this;
     }
 
@@ -747,10 +788,11 @@ class MysqliQuery extends ActiveQuery
      *  '!p.attribute2' => 'DESC',
      * ]);
      *
-     * @param array<mixed>|string $attribute the attribute
-     * @param string              $direction the order direction for the attribute
+     * @param string|array  $attribute the attribute
+     * @param string        $direction the order direction for the attribute
+     * @return $this
      */
-    public function orderBy($attribute, string $direction = 'ASC'): self
+    public function orderBy(string|array $attribute, string $direction = 'ASC'): self
     {
         if (is_array($attribute)) {
             foreach ($attribute as $name => $direction) {
@@ -772,6 +814,7 @@ class MysqliQuery extends ActiveQuery
      * $this->orderByRaw('COUNT({attribute}) DESC, {p.attribute} ASC) // // ORDER BY COUNT(table.attribute) DESC, p.attribute ASC
      *
      * @param string $sql the order by SQL statement
+     * @return $this
      */
     public function orderByRaw(string $sql): self
     {
@@ -910,7 +953,7 @@ class MysqliQuery extends ActiveQuery
             empty($this->joins) ? null : implode(' ', $this->joins),
             empty($this->conditions) ? null : (($this->returnConditionOnly ? '': 'WHERE ') . implode(' ', $this->conditions)),
             empty($this->groupBys) ? null : 'GROUP BY ' . implode(', ', $this->groupBys),
-            // having
+            empty($this->having) ? null : 'HAVING ' . implode(', ', $this->having),
             empty($this->orderBys) ? null : 'ORDER BY ' . implode(', ', $this->orderBys),
             $limit,
         ])));

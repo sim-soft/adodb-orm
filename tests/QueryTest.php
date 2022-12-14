@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-require_once 'bootstrap.php';
+//require_once 'bootstrap.php';
 
 use PHPUnit\Framework\TestCase;
 use Simsoft\ADOdb\Builder\ActiveQuery;
@@ -11,7 +11,7 @@ final class QueryTest extends TestCase
     public function dataProvider(): array
     {
         return [
-            'Simple select' => [Query::from('user'), 'SELECT * FROM `user`'],        
+            'Simple select' => [Query::from('user'), 'SELECT * FROM `user`'],
         ];
     }
 
@@ -45,7 +45,7 @@ final class QueryTest extends TestCase
     public function testMerge(ActiveQuery $query, string $expectedSQL): void
     {
         $generatedSQL = Query::from('user')->where('age', '>=', 25)->merge($query)->getCompleteSQLStatement();
-        $this->assertSame($generatedSQL, $expectedSQL);       
+        $this->assertSame($generatedSQL, $expectedSQL);
     }
 
     /**
@@ -54,6 +54,6 @@ final class QueryTest extends TestCase
     public function testOrMerge(ActiveQuery $query, string $expectedSQL): void
     {
         $generatedSQL = Query::from('user')->where('age', '>=', 25)->orMerge($query)->getCompleteSQLStatement();
-        $this->assertSame($generatedSQL, $expectedSQL);       
+        $this->assertSame($generatedSQL, $expectedSQL);
     }
 }

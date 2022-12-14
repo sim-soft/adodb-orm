@@ -8,12 +8,12 @@ use Simsoft\ADOdb\DB;
 /**
  * Class ActiveQuery.
  *
- * @method ADORecordSet|bool execute(DB|string $db)
- * @method array|false       getAll(DB|string $db)
- * @method array|bool        getCol(DB|string $db)
- * @method array|false       getRow(DB|string $db)
- * @method array|bool        getAssoc(DB|string $db)
- * @method mixed             getOne(DB|string $db)
+ * @method ADORecordSet|bool execute()
+ * @method array|false       getAll()
+ * @method array|bool        getCol()
+ * @method array|false       getRow()
+ * @method array|bool        getAssoc()
+ * @method mixed             getOne()
  */
 abstract class ActiveQuery
 {
@@ -48,7 +48,7 @@ abstract class ActiveQuery
      * @param null|string $class The active record class name
      */
     public function __construct(
-        protected mixed $db = null,
+        protected DB|string|null $db = null,
         protected ?string $class = null
     ){
     }
@@ -80,14 +80,12 @@ abstract class ActiveQuery
                     ? $db->{$name}($this->getCompleteSQLStatement())
                     : $db->{$name}((string) $this, $this->getBinds());
             }
-            
+
             throw new \Exception(get_called_class() . ": Method {$name} not exist.");
         } catch (\Exception $e) {
             debug_print_backtrace();
             trigger_error($e->getMessage(), E_USER_ERROR);
         }
-
-        return false;
     }
 
     /**
@@ -116,14 +114,14 @@ abstract class ActiveQuery
 
     /**
      * Use complete SQL statement for the query execution.
-     * 
+     *
      * WARNING!!! This feature is not secured from SQL injection.
-     * 
+     *
      * When this feature is enabled. The complete SQL statement will be used for the query execution.
-     * No binding values will be passed to the query execution. 
-     * 
+     * No binding values will be passed to the query execution.
+     *
      * @param bool $enable Set to enable the feature.
-     * 
+     *
      * @return self
      */
     public function useCompleteSQL(bool $enable = true): self
@@ -142,7 +140,7 @@ abstract class ActiveQuery
 
     /**
      * Execute callable method queries.
-     * 
+     *
      * @param mixed $data The input data.
      * @param callable $method The anonymous method to be executed.
      */
@@ -167,7 +165,7 @@ abstract class ActiveQuery
 
     /**
      * Get condition SQL statement, which is without the SELECT and FROM.
-     * 
+     *
      * @return string
      */
     public function getConditionSQLStatement(): string
@@ -178,7 +176,7 @@ abstract class ActiveQuery
 
     /**
      * Get full SQL statement.
-     * 
+     *
      * @return string
      */
     public function getCompleteSQLStatement(): string
@@ -193,14 +191,17 @@ abstract class ActiveQuery
      *
      * @return array|bool
      */
-    public function getBinds()
+    public function getBinds(): array|false
     {
         return empty($this->binds) ? false : $this->binds;
     }
 
     /**
      * Replace a given value in the string sequentially with an array.
-     * 
+     *
+     * @param string $search String to be replaced.
+     * @param array $replace Values to replaces
+     * @param string $subject The full text.
      * @return string
      */
     public function replaceArray(string $search, array $replace, string $subject): string
@@ -221,11 +222,11 @@ abstract class ActiveQuery
     /**
      * Use connection.
      *
-     * @param DB|string $connection The connection name
-     * 
+     * @param string|DB $connection The connection name
+     *
      * @return self
      */
-    public function db(mixed $connection): self
+    public function db(string|DB $connection): self
     {
         $this->db = $connection;
 
@@ -234,8 +235,9 @@ abstract class ActiveQuery
 
     /**
      * Get connection object.
-     * 
+     *
      * @return DB
+     * @throws \Exception
      */
     public function getDB(): DB
     {
@@ -258,7 +260,7 @@ abstract class ActiveQuery
 
     /**
      * Set active record class.
-     * 
+     *
      * @param string $class The active record class name.
      * @return self
      */
@@ -271,12 +273,13 @@ abstract class ActiveQuery
 
     /**
      * Aggregate function.
-     * 
+     *
      * @param string $func The aggregate function name.
      * @param string $attribute The attribute name or raw select SQL statement.
      * @param string|null $alias The alias name for the aggregate function value.
      *
      * @return mixed
+     * @throws \Exception
      */
     public function aggregate(string $func, string $attribute, ?string $alias = null): mixed
     {
@@ -285,14 +288,14 @@ abstract class ActiveQuery
         if ($attribute != '*' && $attribute[0] != '{') {
             $attribute = '{' . $attribute . '}';
         }
-        
+
         $func = strtoupper($func);
 
         if (!in_array($func, ['AVG', 'COUNT', 'MAX', 'MIN', 'SUM'])) {
             $attribute = str_ireplace('DISTINCT', '', $attribute);
         }
 
-        $table = $this->class ? $this->from((new $this->class())->_table)->getTable() : $this->getTable();        
+        $table = $this->class ? $this->from((new $this->class())->_table)->getTable() : $this->getTable();
 
         $sql = $this->mapQualifier("SELECT {$func}({$attribute}){$alias}FROM {$table}");
 
@@ -310,24 +313,26 @@ abstract class ActiveQuery
 
     /**
      * AVG function
-     * 
+     *
      * @param string $attribute The attribute name or raw select SQL statement.
      * @param string|null $alias The alias name for the aggregate function value.
-     * 
+     *
      * @return mixed
+     * @throws \Exception
      */
     public function avg(string $attribute, ?string $alias = null): mixed
-    {   
+    {
         return $this->aggregate(__FUNCTION__, $attribute, $alias);
     }
-    
+
     /**
      * COUNT function
-     * 
+     *
      * @param string $attribute The attribute name or raw select SQL statement.
      * @param string|null $alias The alias name for the aggregate function value.
-     * 
+     *
      * @return int
+     * @throws \Exception
      */
     public function count(string $attribute = '*', ?string $alias = null): int
     {
@@ -336,11 +341,12 @@ abstract class ActiveQuery
 
     /**
      * MAX function.
-     * 
+     *
      * @param string $attribute The attribute name or raw select SQL statement.
      * @param string|null $alias The alias name for the aggregate function value.
-     * 
+     *
      * @return mixed
+     * @throws \Exception
      */
     public function max(string $attribute, ?string $alias = null): mixed
     {
@@ -349,11 +355,12 @@ abstract class ActiveQuery
 
     /**
      * MIN function
-     * 
+     *
      * @param string $attribute The attribute name or raw select SQL statement.
      * @param string|null $alias The alias name for the aggregate function value.
-     * 
+     *
      * @return mixed
+     * @throws \Exception
      */
     public function min(string $attribute, ?string $alias = null): mixed
     {
@@ -362,11 +369,12 @@ abstract class ActiveQuery
 
     /**
      * SUM function
-     * 
+     *
      * @param string $attribute The attribute name or raw select SQL statement.
      * @param string|null $alias The alias name for the aggregate function value.
-     * 
+     *
      * @return mixed
+     * @throws \Exception
      */
     public function sum(string $attribute, ?string $alias = null): mixed
     {
@@ -375,8 +383,9 @@ abstract class ActiveQuery
 
     /**
      * Find all active records
-     * 
-     * @return array<mixed>
+     *
+     * @return array
+     * @throws \Exception
      */
     public function find(): array
     {
@@ -385,20 +394,22 @@ abstract class ActiveQuery
 
     /**
      * Find all active records.
-     * 
-     * @return array<mixed>
+     *
+     * @return array
+     * @throws \Exception
      */
     public function findAll(): array
     {
         return $this->class === null
-                ? $this->getAll() 
+                ? $this->getAll()
                 : $this->getActiveRecords($this->class);
     }
 
     /**
      * Find one active record.
-     * 
-     * @return null|ActiveRecord|array<mixed>
+     *
+     * @return null|ActiveRecord|array
+     * @throws \Exception
      */
     public function first(): mixed
     {
@@ -407,8 +418,9 @@ abstract class ActiveQuery
 
     /**
      * Find one active record.
-     * 
-     * @return null|ActiveRecord|array<mixed>
+     *
+     * @return null|ActiveRecord|array
+     * @throws \Exception
      */
     public function findOne(): mixed
     {
@@ -418,10 +430,11 @@ abstract class ActiveQuery
 
     /**
      * Update all
-     * 
-     * @param array<mixed> $attributes New values for the attribute => value pairs to be saved.
-     * 
+     *
+     * @param array $attributes New values for the attribute => value pairs to be saved.
+     *
      * @return bool
+     * @throws \Exception
      */
     public function updateAll(array $attributes): bool
     {
@@ -434,7 +447,7 @@ abstract class ActiveQuery
             return $this->from($model->_table)->db($model->_dbat)->getDB()
                     ->update($model->_table, $attributes, $this);
         }
-        
+
         return $this->getDB()->update(trim($this->table, '`'), $attributes, $this);
     }
 
@@ -443,8 +456,9 @@ abstract class ActiveQuery
      *
      * Should provide the Active record class name to the constructor before use.
      *
-     * @param string $modelClass the active record model class
-     * @return array<mixed>
+     * @param string $activeRecordClass the active record model class
+     * @return array
+     * @throws \Exception
      */
     public function getActiveRecords(string $activeRecordClass): array
     {
@@ -458,7 +472,6 @@ abstract class ActiveQuery
             $activeRecordClass,
             $model->_table,
             $this->getConditionSQLStatement(),
-            //strtr($this->getConditionSQLStatement(), ["'?'" => '?']),
             $this->getBinds()
         );
     }
@@ -470,18 +483,18 @@ abstract class ActiveQuery
      * $this->from('tableName');                    // FROM tableName
      * $this->from('tableName t')                   // FROM tableName AS t
      * $this->from('tableName AS t')                // FROM tableName AS t
-     * $this->from(['t' => 'SELECT * FROM ..'])     // FROM (SELECT * FROM ...) AS t
+     * $this->from(['t' => 'SELECT * FROM ..'])     // FROM (SELECT * FROM ...) AS t  sub query
      *
-     * @param array|string $table the table name
+     * @param string|array $table the table name
      */
-    abstract protected function from(mixed $table): self;
+    abstract protected function from(string|array $table): self;
 
     /** @method Return the built SQL statement. */
     abstract protected function buildSQL(): string;
 
     /**
      * Rendering full SQL statement if it is debug mode.
-     * 
+     *
      * @return void
      */
     protected function renderSQLDebug(): void
