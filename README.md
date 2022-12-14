@@ -4,7 +4,7 @@ This is an ORM wrapper for ADOdb (https://adodb.org/)
 
 ## Requirements
 
-- PHP >= 7.4
+- PHP >= 8
 
 ## Installation
 
@@ -89,7 +89,7 @@ $config = [
         'user' => 'username',
         'pass' => 'password',
         'schema' => 'db_example',
-    ],    
+    ],
 ];
 
 DB::init($config);
@@ -111,7 +111,7 @@ namespace Model;
 use Simsoft\ADOdb\ActiveRecord;
 
 /**
- * Class User 
+ * Class User
  */
 class User extends ActiveRecord
 {
@@ -138,7 +138,7 @@ $config = [
         'user' => 'username',
         'pass' => 'password',
         'schema' => 'db_example',
-    ],    
+    ],
 ];
 
 DB::init($config);
