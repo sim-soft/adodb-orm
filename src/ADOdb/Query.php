@@ -131,12 +131,12 @@ class Query
     public function createActiveQuery(): ActiveQuery
     {
         if ($this->db === null) {
-            return new MysqliQuery();
+            return new ActiveQuery();
         }
 
         return match ($this->db->getDatabaseType()) {
-            //'mysqli' => new MysqliQuery($this->db, $this->class),
-            default => new MysqliQuery($this->db, $this->class),
+            //'mysqli' => new ActiveQuery($this->db, $this->class),
+            default => new ActiveQuery($this->db, $this->class),
         };
     }
 }
