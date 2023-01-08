@@ -42,7 +42,7 @@ final class DB
      * Call database object method.
      *
      * @param string       $name      the method name
-     * @param array<mixed> $arguments the arguments to be used
+     * @param array $arguments the arguments to be used
      *
      * @return mixed
      */
@@ -87,7 +87,7 @@ final class DB
 
     /**
      * Check if method exists.
-     * 
+     *
      * @return bool
      */
     public function methodExists(string $method): bool
@@ -117,7 +117,7 @@ final class DB
      *
      * @return bool return true on success
      */
-    public function update(string $table, array $attributes = [], $conditions = false): bool
+    public function update(string $table, array $attributes = [], ActiveQuery|false|string $conditions = false): bool
     {
         if ($conditions instanceof ActiveQuery) {
             $conditions = $conditions->getCompleteSQLStatement();
@@ -147,7 +147,7 @@ final class DB
      *
      * DB::use('connection')->transaction(function(){
      *  // inserts or updates
-     *  
+     *
      *  return true;
      * });
      *
@@ -176,8 +176,8 @@ final class DB
      * The callable must return a bool value.
      *
      * DB::use('connection')->transaction(function(){
-     *  // inserts or updates 
-     *  
+     *  // inserts or updates
+     *
      *  return true.
      * });
      *
@@ -260,7 +260,7 @@ final class DB
                 self::$connections[$name] = $db;
             } else {
                 throw new \Exception("DB connection '{$name}' failed to connect.");
-            }            
+            }
         } catch (\Exception $e) {
             debug_print_backtrace();
             trigger_error($e->getMessage(), E_USER_ERROR);
@@ -280,7 +280,20 @@ final class DB
             self::connectTo($name);
         }
 
-        return new static(self::$connections[$name]);
+        return new DB(self::$connections[$name]);
     }
 
+    /**
+     * Get escaped string
+     *
+     * @param string $value The value to be escaped.
+     * @return string
+     */
+    public static function qStr(string $value): string
+    {
+        if (self::$connections) {
+            return current(self::$connections)->qStr($value);
+        }
+        return $value;
+    }
 }
