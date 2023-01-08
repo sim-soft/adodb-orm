@@ -79,6 +79,13 @@ class ActiveQuery
         protected DB|string|null $db = null,
         protected ?string $class = null
     ){
+        if ($this->class && $this->db === null) {
+            $this->db = (new $this->class())->_dbat;
+        }
+
+        if (is_string($this->db)) {
+            $this->db = DB::use($this->db);
+        }
     }
 
     /**
