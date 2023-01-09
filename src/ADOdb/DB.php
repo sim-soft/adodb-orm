@@ -287,12 +287,15 @@ final class DB
      * Get escaped string
      *
      * @param string $value The value to be escaped.
+     * @param bool $stringQuotes Whether return value with open & end single quote. Default: false
      * @return string
      */
-    public static function qStr(string $value): string
+    public static function qStr(string $value, bool $stringQuotes = false): string
     {
         if (self::$connections) {
-            return current(self::$connections)->qStr($value);
+            return $stringQuotes
+                    ? current(self::$connections)->qStr($value)
+                    : trim(current(self::$connections)->qStr($value),"'");
         }
         return $value;
     }
