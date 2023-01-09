@@ -2,39 +2,55 @@
 
 namespace Simsoft\ADOdb;
 
+use ADOConnection;
 use Simsoft\ADOdb\Builder\ActiveQuery;
 
 /**
  * Class DB.
  *
- * @method ADORecordSet|bool  execute(string $sql, array|bool $inputarr = false)
+ * @method \ADORecordSet|bool  execute(string $sql, array|bool $inputarr = false)
+ * @method \ADORecordSet|bool cacheExecute(int $cacheTimeInSeconds, string|bool $sql=false, array|bool $bindvars=false)
+ * @method bool               autoExecute(string $table, array $arrFields, string $mode='INSERT', string|bool $where=false, bool $forceUpdate=false)
  * @method array|false        getAll(string $sql, array|bool $inputarr = false)
+ * @method array|false        cacheGetAll(int $cacheSeconds, string|bool $sql=false, array|bool $bindvars=false)
  * @method array|false        getArray(string $sql, array|bool $inputarr = false)
  * @method array|false        getRandRow(string $sql, array|bool $inputarr = false)
  * @method array|bool         getCol(string $sql, array|bool $inputarr = false, bool $trim = false)
+ * @method array|bool         cacheGetCol(int $cacheSeconds, string|bool $sql=false, array|bool $bindvars=false, bool $trimString=false)
  * @method array|false        getRow(string $sql, array|bool $inputarr = false)
+ * @method array|false        cacheGetRow(int $cacheSeconds, string|bool $sql=false, array|bool $bindvars=false)
  * @method array|bool         getAssoc(string $sql, array|bool $inputarr = false)
+ * @method array|false        cacheGetAssoc(int $cacheSeconds, string|bool $sql=false, array|bool $bindvars=false, bool $forceArray=false, bool $first2Cols=false)
  * @method mixed              getOne(string $sql, array|bool $inputarr = false)
- * @method ADORecordSet|false selectLimit(string $sql, int $nrows = -1, int $offset = -1, array|bool $inputarr = false, int $sec2cache)
+ * @method mixed              cacheGetOne(int $cacheSeconds, string|bool $sql=false)
+ * @method \ADORecordSet|false selectLimit(string $sql, int $nrows = -1, int $offset = -1, array|bool $inputarr = false, int $sec2cache = 0)
+ * @method \ADORecordSet|false cacheSelectLimit(int $cacheSeconds, string $sql, int $rowsToReturn=-1, int $startOffset=-1, array|bool $bindvars=false)
+ * @method void               cacheFlush(string|bool $sql=false, array|bool $bindVariables=false)
  * @method int                replace(string $table, array $fieldArray, string $keyCol, bool $autoQuote = false, bool $has_autoinc= false)
  * @method bool               updateBlob(string $table, string $column, string $val, mixed $where, string $blobtype)
  * @method array              getActiveRecordsClass(mixed $class, mixed $table, mixed $whereOrderBy = false, mixed $bindarr = false, mixed $primkeyArr = false, array $extra = [], mixed $relations = [])
  * @method array              getActiveRecords(mixed $table, mixed $where = false, mixed $bindarr = false, mixed $primkeyArr = false)
+ * @method string|false       getInsertSql(mixed $recordSet, array $fieldArray, bool $placeholder=false, ?bool $forceType=null)
+ * @method string|false       getUpdateSql(obj $result, array $fieldArray, bool $forceUpdate=false, bool $placeHolder=false, ?bool $forceType=null)
+ * @method int                genId(string $seqname='adodbseq', int $startID=1)
+ * @method int                insert_Id(string $table='', string $column='')
+ * @method int|false          affected_rows()
+ * @method string             dbDate(float $timestamp)
  */
 final class DB
 {
-    /** @var array<mixed> */
+    /** @var array */
     private static array $config = [];
 
-    /** @var array<mixed> */
+    /** @var array */
     private static array $connections = [];
 
     /**
      * Constructor.
      *
-     * @param object $db the database connection object
+     * @param ADOConnection $db the database connection object
      */
-    public function __construct(protected $db)
+    public function __construct(protected ADOConnection $db)
     {
     }
 
@@ -48,7 +64,7 @@ final class DB
      */
     public function __call(string $name, array $arguments)
     {
-        if (in_array($name, ['GetInsertSQL', 'GetUpdateSQL'])) {
+        if (in_array($name, ['GetInsertSQL', 'getInsertSql', 'GetUpdateSQL', 'getUpdateSql'])) {
             $arguments[0] = &$arguments[0];
         }
 
