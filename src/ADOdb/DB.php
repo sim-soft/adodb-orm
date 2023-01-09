@@ -287,12 +287,15 @@ final class DB
      * Get escaped string
      *
      * @param string $value The value to be escaped.
+     * @param bool $removeOpenEndQuotes Whether to remove the default open and end ' quote. Default: true
      * @return string
      */
-    public static function qStr(string $value): string
+    public static function qStr(string $value, bool $removeOpenEndQuotes = true): string
     {
         if (self::$connections) {
-            return current(self::$connections)->qStr($value);
+            return $removeOpenEndQuotes
+                ? trim(current(self::$connections)->qStr($value), "'")
+                : current(self::$connections)->qStr($value);
         }
         return $value;
     }
