@@ -34,7 +34,6 @@ use Simsoft\ADOdb\Builder\ActiveQuery;
  * @method string|false       getUpdateSql(obj $result, array $fieldArray, bool $forceUpdate=false, bool $placeHolder=false, ?bool $forceType=null)
  * @method int                genId(string $seqname='adodbseq', int $startID=1)
  * @method int                insert_Id(string $table='', string $column='')
- * @method int|false          affected_rows()
  * @method string             dbDate(float $timestamp)
  */
 final class DB
@@ -57,7 +56,7 @@ final class DB
     /**
      * Call database object method.
      *
-     * @param string       $name      the method name
+     * @param string $name      the method name
      * @param array $arguments the arguments to be used
      *
      * @return mixed
@@ -104,6 +103,7 @@ final class DB
     /**
      * Check if method exists.
      *
+     * @param string $method Method name
      * @return bool
      */
     public function methodExists(string $method): bool
@@ -219,7 +219,7 @@ final class DB
     /**
      * Initialize.
      *
-     * @param array<mixed> $config The db
+     * @param array $config The db
      */
     public static function init(array $config): void
     {
