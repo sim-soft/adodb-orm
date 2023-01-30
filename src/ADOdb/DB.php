@@ -300,18 +300,29 @@ final class DB
     }
 
     /**
+     * Get quoted escaped string
+     *
+     * @param string $value The value to be escaped.
+     * @return string Quoted escaped string
+     */
+    public static function qStr(string $value): string
+    {
+        if (self::$connections) {
+            return current(self::$connections)->qStr($value);
+        }
+        return $value;
+    }
+
+    /**
      * Get escaped string
      *
      * @param string $value The value to be escaped.
-     * @param bool $stringQuotes Whether return value with open & end single quote. Default: false
-     * @return string
+     * @return string Escaped string
      */
-    public static function qStr(string $value, bool $stringQuotes = false): string
+    public static function eStr(string $value): string
     {
         if (self::$connections) {
-            return $stringQuotes
-                    ? current(self::$connections)->qStr($value)
-                    : trim(current(self::$connections)->qStr($value),"'");
+            return current(self::$connections)->escape($value);
         }
         return $value;
     }
