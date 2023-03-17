@@ -33,15 +33,15 @@ class ActiveRecord extends \ADODB_Active_Record
     protected array $dirtyAttributes = [];
 
     /**
-     * @var array Attributes casts. Supported casts int, bool, float, string, array 
-     * 
+     * @var array Attributes casts. Supported casts int, bool, float, string, array
+     *
      * protected array $casts = [
      *  'attribute1' => 'int',
      *  'attribute2' => 'bool',
      *   ...
      * ];
      */
-    protected array $casts = [];    
+    protected array $casts = [];
 
     /** @var array All table fields */
     public array $tableFields = [];
@@ -51,7 +51,7 @@ class ActiveRecord extends \ADODB_Active_Record
 
     /**
      * Constructor
-     * 
+     *
      * @param string|bool $table The table name.
      * @param array<mixed>|bool $pkeyarr The primary key.
      * @param mixed $db The connection obj.
@@ -117,7 +117,7 @@ class ActiveRecord extends \ADODB_Active_Record
 
     /**
      * Determine is the current model is new record.
-     * 
+     *
      * @return bool
      */
     public function isNewRecord(): bool
@@ -127,7 +127,7 @@ class ActiveRecord extends \ADODB_Active_Record
 
     /**
      * Get model primary key value.
-     * 
+     *
      * @return mixed
      */
     public function getKey(): mixed
@@ -135,7 +135,7 @@ class ActiveRecord extends \ADODB_Active_Record
         if ($this->isNewRecord()) {
             return null;
         }
-        
+
         if (is_array($this->primaryKey)){
             $keys = new \stdClass();
             foreach($this->primaryKey as $attribute) {
@@ -143,15 +143,15 @@ class ActiveRecord extends \ADODB_Active_Record
             }
             return $keys;
         }
-                
+
         return $this->{$this->primaryKey};
     }
 
     /**
      * Mass assign attributes
-     * 
+     *
      * @param array $attrbutes The array of attribute => value pairs.
-     * 
+     *
      * @return self
      */
     public function fill(array $attributes): self
@@ -180,8 +180,10 @@ class ActiveRecord extends \ADODB_Active_Record
 
     /**
      * Performs update operation
+     *
+     * @return bool
      */
-    public function update()
+    public function update(): bool
     {
         if ($this->isNewRecord()) {
             return $this->insert();
@@ -205,8 +207,10 @@ class ActiveRecord extends \ADODB_Active_Record
 
     /**
      * Performs insert operation
+     *
+     * @return bool
      */
-    public function insert()
+    public function insert(): bool
     {
         $attributes = array_intersect_key($this->attributes, $this->dirtyAttributes);
         if ($attributes) {
@@ -217,7 +221,7 @@ class ActiveRecord extends \ADODB_Active_Record
 
     /**
      * Get query object.
-     * 
+     *
      * @return ActiveQuery
      */
     public static function query(): ActiveQuery
@@ -227,10 +231,12 @@ class ActiveRecord extends \ADODB_Active_Record
 
     /**
      * Find by primary key
-     * 
-     * @return null|ActiveRecord
+     *
+     * @param mixed $key
+     * @return $this|null
+     * @throws \Exception
      */
-    public function findByPk(mixed $key): ?self 
+    public function findByPk(mixed $key): ?static
     {
         return self::query()->where($this->primaryKey, $key)->findOne();
     }
@@ -239,7 +245,7 @@ class ActiveRecord extends \ADODB_Active_Record
      * Get all attribute values.
      */
     public function getAttributes(): array
-    {   
+    {
         return iterator_to_array(call_user_func(function(){
             foreach ($this->GetAttributeNames() as $attribute) {
                 yield $attribute => $this->{$attribute};
