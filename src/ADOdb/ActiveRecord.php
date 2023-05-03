@@ -103,7 +103,7 @@ class ActiveRecord extends \ADODB_Active_Record
     public function __get($name): mixed
     {
         if (array_key_exists($name, $this->casts)) {
-            match($this->casts[$name]) {
+            return match($this->casts[$name]) {
                 'int', 'integer' => (int) $this->attributes[$name] ?? 0,
                 'bool', 'boolean' => (bool) $this->attributes[$name] ?? false,
                 'float', 'double', 'real' => (float) $this->attributes[$name] ?? 0.00,
