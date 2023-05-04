@@ -49,6 +49,9 @@ class ActiveRecord extends \ADODB_Active_Record
     /** @var bool Enable debug mode. */
     protected static bool $debugMode = false;
 
+    /** @var bool Enable validation. Default: true. */
+    public bool $validation = true;
+
     /**
      * Constructor
      *
@@ -216,6 +219,44 @@ class ActiveRecord extends \ADODB_Active_Record
             return DB::use($this->_dbat)->insert($this->_table, $attributes);
         }
         return true;
+    }
+
+    /**
+     * Enable or disable validation.
+     *
+     * @param bool $enable Enable validation. Default: true.
+     * @return $this
+     */
+    public function validation(bool $enable = true): static
+    {
+        $this->validation = $enable;
+        return $this;
+    }
+
+    /**
+     * Implement validation.
+     *
+     * This method should return a bool value, TRUE indicate validation success.
+     *
+     * @return bool
+     */
+    public function validate(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Implement save.
+     *
+     * @return bool|int
+     */
+    public function save(): bool|int
+    {
+        if ($this->validation && !$this->validate()) {
+            return false;
+        }
+
+        return parent::save();
     }
 
     /**
