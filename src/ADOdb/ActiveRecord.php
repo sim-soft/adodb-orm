@@ -53,7 +53,7 @@ class ActiveRecord extends \ADODB_Active_Record
      * Constructor
      *
      * @param string|bool $table The table name.
-     * @param array<mixed>|bool $pkeyarr The primary key.
+     * @param array|bool $pkeyarr The primary key.
      * @param mixed $db The connection obj.
      */
     public function __construct($table = false, $pkeyarr=false, $db=false)
@@ -86,11 +86,11 @@ class ActiveRecord extends \ADODB_Active_Record
 
         if (array_key_exists($name, $this->casts)) {
             match($this->casts[$name]) {
-                'int', 'integer' => (int) $this->attributes[$name] = (int) $value,
-                'bool', 'boolean' => (bool) $this->attributes[$name] = (bool) $value,
-                'float', 'double', 'real' => (float) $this->attributes[$name] = (float) $value,
-                'string', 'binary' => (string) $this->attributes[$name] = (string) $value,
-                'array' => (array) $this->attributes[$name] = (array) $value,
+                'int', 'integer' => $this->attributes[$name] = (int) $value,
+                'bool', 'boolean' => $this->attributes[$name] = (bool) $value,
+                'float', 'double', 'real' => $this->attributes[$name] = (float) $value,
+                'string', 'binary' => $this->attributes[$name] = (string) $value,
+                'array' => $this->attributes[$name] = (array) $value,
             };
         } else {
             $this->attributes[$name] = $value;
@@ -150,8 +150,7 @@ class ActiveRecord extends \ADODB_Active_Record
     /**
      * Mass assign attributes
      *
-     * @param array $attrbutes The array of attribute => value pairs.
-     *
+     * @param array $attributes The array of attribute => value pairs.
      * @return self
      */
     public function fill(array $attributes): self
