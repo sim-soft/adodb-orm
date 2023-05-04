@@ -219,6 +219,17 @@ class ActiveRecord extends \ADODB_Active_Record
     }
 
     /**
+     * Get last insert ID.
+     *
+     * @return mixed
+     */
+    public function getLastInsertID(): mixed
+    {
+        $db = $this->DB();
+        return $this->LastInsertID($db, $this->primaryKey);
+    }
+
+    /**
      * Get query object.
      *
      * @return ActiveQuery
