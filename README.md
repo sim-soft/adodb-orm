@@ -46,6 +46,7 @@ $config = [
     ],*/
 ];
 
+// Initiate DB config
 DB::init($config);
 
 $result = DB::use('mysql')->execute('SELECT * FROM table1 WHERE attr1 = ? AND attr2 = ?', ['value1', 'value2']);

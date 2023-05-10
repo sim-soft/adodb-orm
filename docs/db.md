@@ -53,26 +53,26 @@ $success = DB::use('mysql')->update('table', , ['attr1' => 'value1', 'attr2' => 
 
 ```php
 // Return query result (or RecordSet) object
-$result = DB::use('mysql')->execute('SELECT * FROM table1 WHERE attr1 = ? AND attr2 = 2', ['value1', 'value2']);
+$result = DB::use('mysql')->execute('SELECT * FROM table1 WHERE attr1 = ? AND attr2 = ?', ['value1', 'value2']);
 
 while ($row = $result->fetchRow()) {
     print_r($row);
 }
 
 // Return data in array
-$result = DB::use('mysql')->getArray('SELECT * FROM table1 WHERE attr1 = ? AND attr2 = 2', ['value1', 'value2']);
+$result = DB::use('mysql')->getArray('SELECT * FROM table1 WHERE attr1 = ? AND attr2 = ?', ['value1', 'value2']);
 
 foreach($result as $row) {
     echo $row['attr1'];
 }
 
 // Other connection methods
-$result = DB::use('mysql')->getRandRow('SELECT * FROM table1 WHERE attr1 = ? AND attr2 = 2', ['value1', 'value2']);
-$result = DB::use('mysql')->getAssoc('SELECT * FROM table1 WHERE attr1 = ? AND attr2 = 2', ['value1', 'value2']);
-$result = DB::use('mysql')->getOne('SELECT * FROM table1 WHERE attr1 = ? AND attr2 = 2', ['value1', 'value2']);
-$result = DB::use('mysql')->getRow('SELECT * FROM table1 WHERE attr1 = ? AND attr2 = 2', ['value1', 'value2']);
-$result = DB::use('mysql')->getCol('SELECT attr1 FROM table1 WHERE attr1 = ? AND attr2 = 2', ['value1', 'value2']);
-$result = DB::use('mysql')->selectLimit('SELECT * FROM table1 WHERE attr1 = ? AND attr2 = 2', 20, 3, ['value1', 'value2']);
+$result = DB::use('mysql')->getRandRow('SELECT * FROM table1 WHERE attr1 = ? AND attr2 = ?', ['value1', 'value2']);
+$result = DB::use('mysql')->getAssoc('SELECT * FROM table1 WHERE attr1 = ? AND attr2 = ?', ['value1', 'value2']);
+$result = DB::use('mysql')->getOne('SELECT * FROM table1 WHERE attr1 = ? AND attr2 = ?', ['value1', 'value2']);
+$result = DB::use('mysql')->getRow('SELECT * FROM table1 WHERE attr1 = ? AND attr2 = ?', ['value1', 'value2']);
+$result = DB::use('mysql')->getCol('SELECT attr1 FROM table1 WHERE attr1 = ? AND attr2 = ?', ['value1', 'value2']);
+$result = DB::use('mysql')->selectLimit('SELECT * FROM table1 WHERE attr1 = ? AND attr2 = ?', 20, 3, ['value1', 'value2']);
 
 // Return result in Active Record object.
 $result = DB::use('mysql')->getActiveRecordsClass(
@@ -87,10 +87,10 @@ $result = DB::use('mysql')->getActiveRecordsClass(
 
 ```php
 
-$db = DB::use('mysq');
+$db = DB::use('mysql');
 
 // transaction method expecting a callable which return a bool value.
-// Return true will commit, 
+// Return true will commit,
 // Return false will rollback.
 $db->transaction(function() use ($db) {
 
@@ -126,6 +126,6 @@ $db->smartTransaction(function() use ($db) {
 
 ```php
 // Enable debug mode by calling debug() method.
-$result = DB::use('mysql')->debug()->execute('SELECT * FROM table1 WHERE attr1 = ? AND attr2 = 2', ['value1', 'value2']);
-$result = DB::use('mysql')->debug()->getArray('SELECT * FROM table1 WHERE attr1 = ? AND attr2 = 2', ['value1', 'value2']);
+$result = DB::use('mysql')->debug()->execute('SELECT * FROM table1 WHERE attr1 = ? AND attr2 = ?', ['value1', 'value2']);
+$result = DB::use('mysql')->debug()->getArray('SELECT * FROM table1 WHERE attr1 = ? AND attr2 = ?', ['value1', 'value2']);
 ```
