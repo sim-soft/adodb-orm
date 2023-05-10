@@ -222,6 +222,28 @@ class ActiveRecord extends \ADODB_Active_Record
     }
 
     /**
+     * Performs delete operation.
+     *
+     * @return bool
+     */
+    public function delete(): bool
+    {
+        if ($this->isNewRecord()) {
+            return false;
+        }
+
+        $query = self::query();
+        if (is_array($this->primaryKey)) {
+            foreach($this->primaryKey as $attribute) {
+                $query->where($attribute, $this->$attribute);
+            }
+        } else {
+            $query->where($this->primaryKey, $this->{$this->primaryKey});
+        }
+        return DB::use($this->_dbat)->delete($this->_table, $query);
+    }
+
+    /**
      * Enable or disable validation.
      *
      * @param bool $enable Enable validation. Default: true.

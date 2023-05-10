@@ -143,6 +143,22 @@ final class DB
     }
 
     /**
+     * Perform delete data
+     *
+     * @param string $table The table name to be deleted
+     * @param ActiveQuery|false|string $conditions The condition for to delete. Example: 'id=12' or 'name like "john%"'
+     * @return bool
+     */
+    public function delete(string $table, ActiveQuery|false|string $conditions = false): bool
+    {
+        if ($conditions instanceof ActiveQuery) {
+            return (bool) $this->db->execute('DELETE FROM ' .  $table . ' WHERE ' . $conditions->getConditionSQLStatement(), $conditions->getBinds());
+        }
+
+        return false;
+    }
+
+    /**
      * Get number of rows affected by UPDATE/DELETE.
      */
     public function affectedRows(): int
