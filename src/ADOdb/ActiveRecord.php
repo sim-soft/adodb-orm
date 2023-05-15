@@ -3,6 +3,7 @@
 namespace Simsoft\ADOdb;
 
 use Simsoft\ADOdb\Builder\ActiveQuery;
+use Simsoft\ADOdb\Traits\Error;
 
 /**
  * class ActiveRecord.
@@ -11,6 +12,8 @@ use Simsoft\ADOdb\Builder\ActiveQuery;
  */
 class ActiveRecord extends \ADODB_Active_Record
 {
+    use Error;
+
     /** @var string|array Primary key fields */
     protected mixed $primaryKey = 'id';
 
@@ -45,9 +48,6 @@ class ActiveRecord extends \ADODB_Active_Record
 
     /** @var array All table fields */
     public array $tableFields = [];
-
-    /** @var bool Enable debug mode. */
-    protected static bool $debugMode = false;
 
     /** @var bool Enable validation. Default: true. */
     public bool $validation = true;
