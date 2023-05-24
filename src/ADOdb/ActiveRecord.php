@@ -272,6 +272,26 @@ class ActiveRecord extends \ADODB_Active_Record
     }
 
     /**
+     * Called before a model is saved
+     *
+     * @return void
+     */
+    protected function beforeSave(): void
+    {
+
+    }
+
+    /**
+     * Called after a model is saved
+     *
+     * @return void
+     */
+    protected function afterSave(): void
+    {
+
+    }
+
+    /**
      * Implement save.
      *
      * @return bool|int
@@ -282,7 +302,12 @@ class ActiveRecord extends \ADODB_Active_Record
             return false;
         }
 
-        return parent::save();
+        $this->beforeSave();
+        if (parent::save()) {
+            $this->afterSave();
+            return true;
+        }
+        return false;
     }
 
     /**
