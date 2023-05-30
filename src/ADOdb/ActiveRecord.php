@@ -52,6 +52,9 @@ class ActiveRecord extends \ADODB_Active_Record
     /** @var bool Enable validation. Default: true. */
     public bool $validation = true;
 
+    /** @var bool avoid initiate primary key */
+    protected bool $protectPK = true;
+
     /**
      * Constructor
      *
@@ -63,7 +66,7 @@ class ActiveRecord extends \ADODB_Active_Record
     {
         parent::__construct($table, $pkeyarr, $db);
 
-        if ($this->primaryKey) {
+        if ($this->protectPK && $this->primaryKey) {
             if (is_array($this->primaryKey)) {
                 $this->guarded = array_merge($this->guarded, $this->primaryKey);
             } else {
