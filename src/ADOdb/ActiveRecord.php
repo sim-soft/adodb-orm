@@ -26,6 +26,9 @@ class ActiveRecord extends \ADODB_Active_Record
     /** @var array Create alias for attributes */
     protected array $aliasAttributes = [];
 
+    /** @var array Relations */
+    protected array $relations = [];
+
     /** @var array Attributes that cannot be mass assigned. */
     protected array $guarded = [];
 
@@ -110,6 +113,10 @@ class ActiveRecord extends \ADODB_Active_Record
     {
         if (array_key_exists($name, $this->aliasAttributes)) {
             $name = $this->aliasAttributes[$name];
+        }
+
+        if (array_key_exists($name, $this->relations)) {
+            return $this->relations[$name];
         }
 
         if (array_key_exists($name, $this->casts)) {
@@ -252,7 +259,7 @@ class ActiveRecord extends \ADODB_Active_Record
             }
         } catch (\Throwable $exception) {
             debug_print_backtrace();
-            error_log($exception->getMessage(), E_USER_ERROR);
+            error_log($exception->getMessage(), 0);
         }
     }
 
@@ -386,4 +393,33 @@ class ActiveRecord extends \ADODB_Active_Record
         }));
     }
 
+    /**
+     * Define has one association.
+     *
+     * @param string $name Associate name
+     * @param ActiveRecord|null $model The associated model.
+     * @return void
+     */
+    protected function hasOne(string $name, ?ActiveRecord $model): void
+    {
+        $this->relations[$name] = $model;
+    }
+
+    /**
+     * Define has multiple/ has many associations.
+     *
+     * @param string $name The association name.
+     * @param ActiveRecord|null $model The association model.
+     * @return void
+     */
+    protected function hasMultiple(string $name, ?ActiveRecord $model): void
+    {
+        try {
+            $this->relations[$name] = $model::query()->findAll();
+        } catch (\Throwable $exception) {
+            $this->relations[$name] = [];
+            debug_print_backtrace();
+            error_log($exception->getMessage(), 0);
+        }
+    }
 }
