@@ -223,9 +223,37 @@ class ActiveRecord extends \ADODB_Active_Record
     {
         $attributes = array_intersect_key($this->attributes, $this->dirtyAttributes);
         if ($attributes) {
-            return DB::use($this->_dbat)->insert($this->_table, $attributes);
+            $status = DB::use($this->_dbat)->insert($this->_table, $attributes);
+            if ($status) {
+                $this->refresh();
+                $this->_saved = true;
+            }
+            return $status;
         }
         return true;
+    }
+
+    /**
+     * Refresh the current model.
+     *
+     * @return void
+     */
+    public function refresh(): void
+    {
+        $id = $this->{$this->primaryKey};
+        if ($this->isNewRecord() && !is_array($this->primaryKey)) {
+            $id = $this->getLastInsertID();
+        }
+
+        try {
+            $model = static::findByPk($id);
+            if ($model) {
+                $this->attributes = $model->getAttributes();
+            }
+        } catch (\Throwable $exception) {
+            debug_print_backtrace();
+            error_log($exception->getMessage(), E_USER_ERROR);
+        }
     }
 
     /**
