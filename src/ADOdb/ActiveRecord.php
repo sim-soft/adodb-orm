@@ -127,6 +127,8 @@ class ActiveRecord extends \ADODB_Active_Record
 
         if (array_key_exists($name, $this->relations)) {
             return $this->relations[$name];
+        } elseif (method_exists($this, $name)) {
+            return $this->relations[$name] = $this->$name();
         }
 
         if (array_key_exists($name, $this->casts)) {
@@ -406,30 +408,26 @@ class ActiveRecord extends \ADODB_Active_Record
     /**
      * Define has one association.
      *
-     * @param string $name Associate name
      * @param ActiveRecord|null $model The associated model.
-     * @return void
+     * @return ActiveRecord|null
      */
-    protected function hasOne(string $name, ?ActiveRecord $model): void
+    protected function hasOne(?ActiveRecord $model): ?ActiveRecord
     {
-        $this->relations[$name] = $model;
+        return $model;
     }
 
     /**
      * Define has multiple/ has many associations.
      *
-     * @param string $name The association name.
      * @param ActiveRecord|null $model The association model.
-     * @return void
+     * @return array
      */
-    protected function hasMultiple(string $name, ?ActiveRecord $model): void
+    protected function hasMultiple(?ActiveRecord $model): array
     {
         try {
-            $this->relations[$name] = $model::query()->findAll();
+            return $model::query()->findAll();
         } catch (\Throwable $exception) {
-            $this->relations[$name] = [];
-            debug_print_backtrace();
-            error_log($exception->getMessage(), 0);
+            return [];
         }
     }
 }
