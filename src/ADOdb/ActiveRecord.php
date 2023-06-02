@@ -408,24 +408,28 @@ class ActiveRecord extends \ADODB_Active_Record
     /**
      * Define has one association.
      *
-     * @param ActiveRecord|null $model The associated model.
+     * @param ActiveQuery $query The associated model.
      * @return ActiveRecord|null
      */
-    protected function hasOne(?ActiveRecord $model): ?ActiveRecord
+    protected function hasOne(ActiveQuery $query): ?ActiveRecord
     {
-        return $model;
+        try {
+            return $query->first();
+        } catch (\Throwable $exception) {
+            return null;
+        }
     }
 
     /**
      * Define has multiple/ has many associations.
      *
-     * @param ActiveRecord|null $model The association model.
+     * @param ActiveQuery $query The association model.
      * @return array
      */
-    protected function hasMultiple(?ActiveRecord $model): array
+    protected function hasMultiple(ActiveQuery $query): array
     {
         try {
-            return $model::query()->findAll();
+            return $query->findAll();
         } catch (\Throwable $exception) {
             return [];
         }
