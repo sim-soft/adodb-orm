@@ -107,6 +107,16 @@ class ActiveRecord extends \ADODB_Active_Record
     }
 
     /**
+     * {@inheritdoc }
+     */
+    public function __isset(string $name)
+    {
+        return isset($this->attributes[$name])
+            || isset($this->relations[$name])
+            || isset($this->aliasAttributes[$name]);
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function __get($name): mixed
