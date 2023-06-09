@@ -58,6 +58,9 @@ class ActiveRecord extends \ADODB_Active_Record
     /** @var bool avoid initiate primary key */
     protected bool $protectPK = true;
 
+    /** @var mixed Previous primary key value. Will be used when $protectPK is false. */
+    protected mixed $previousPK = null;
+
     /**
      * Constructor
      *
@@ -86,6 +89,10 @@ class ActiveRecord extends \ADODB_Active_Record
         if ($this->isNewRecord() && $value !== null) {
             $this->dirtyAttributes[$name] = 1;
         } elseif (!$this->isNewRecord()) {
+            if ($this->protectPK === false && is_string($this->primaryKey) && $this->primaryKey == $name) {
+                $this->previousPK = $value;
+            }
+
             if (empty($this->tableFields[$name])) {
                 $this->tableFields[$name] = gettype($value);
             } elseif ($this->{$name} != $value) {
@@ -177,6 +184,17 @@ class ActiveRecord extends \ADODB_Active_Record
     }
 
     /**
+     * Check if an attribute is dirty/ its valued changed.
+     *
+     * @param string $attribute The attribute name to be checked
+     * @return bool
+     */
+    public function isDirty(string $attribute): bool
+    {
+        return array_key_exists($attribute, $this->dirtyAttributes);
+    }
+
+    /**
      * Mass assign attributes
      *
      * @param array $attributes The array of attribute => value pairs.
@@ -225,10 +243,19 @@ class ActiveRecord extends \ADODB_Active_Record
                     $query->where($key, $this->{$key});
                 }
             } else {
-                $query->where($this->primaryKey, $this->{$this->primaryKey});
+                if ($this->protectPK === false && $this->isDirty($this->primaryKey)) {
+                    $pk = $this->previousPK;
+                } else {
+                    $pk = $this->{$this->primaryKey};
+                }
+                $query->where($this->primaryKey, $pk);
             }
 
-            return DB::use($this->_dbat)->update($this->_table, $attributes, $query);
+            $status = DB::use($this->_dbat)->update($this->_table, $attributes, $query);
+            if ($status) {
+                $this->refresh();
+            }
+            return $status;
         }
         return true;
     }
