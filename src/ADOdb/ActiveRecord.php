@@ -90,7 +90,7 @@ class ActiveRecord extends \ADODB_Active_Record
             $this->dirtyAttributes[$name] = 1;
         } elseif (!$this->isNewRecord()) {
             if ($this->protectPK === false && is_string($this->primaryKey) && $this->primaryKey == $name) {
-                $this->previousPK = $value;
+                $this->previousPK = $this->{$this->primaryKey};
             }
 
             if (empty($this->tableFields[$name])) {
