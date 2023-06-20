@@ -89,8 +89,12 @@ class ActiveRecord extends \ADODB_Active_Record
         if ($this->isNewRecord() && $value !== null) {
             $this->dirtyAttributes[$name] = 1;
         } elseif (!$this->isNewRecord()) {
-            if ($this->protectPK === false && is_string($this->primaryKey) && $this->primaryKey == $name) {
-                $this->previousPK = $this->{$this->primaryKey};
+            if ($this->protectPK === false) {
+                if (is_string($this->primaryKey) && $this->primaryKey == $name) {
+                    $this->previousPK = $this->{$this->primaryKey};
+                } elseif (is_array($this->primaryKey) && in_array($name, $this->primaryKey)) {
+                    $this->previousPK[$name] = $this->attributes[$name] ?? null;
+                }
             }
 
             if (empty($this->tableFields[$name])) {
@@ -175,7 +179,7 @@ class ActiveRecord extends \ADODB_Active_Record
         if (is_array($this->primaryKey)){
             $keys = new \stdClass();
             foreach($this->primaryKey as $attribute) {
-                $keys->{$attribute} = $this->{$this->primaryKey};
+                $keys->{$attribute} = $this->{$attribute};
             }
             return $keys;
         }
@@ -239,8 +243,17 @@ class ActiveRecord extends \ADODB_Active_Record
         if ($attributes) {
             $query = Query::db();
             if (is_array($this->primaryKey)) {
-                foreach($this->primaryKey as $key) {
-                    $query->where($key, $this->{$key});
+                if ($this->protectPK === false) {
+                    foreach($this->primaryKey as $key) {
+                        $pk = $this->previousPK[$key] ?? $this->attributes[$key] ?? null;
+                        if ($pk !== null) {
+                            $query->where($key, $pk);
+                        }
+                    }
+                } else {
+                    foreach($this->primaryKey as $key) {
+                        $query->where($key, $this->{$key});
+                    }
                 }
             } else {
                 if ($this->protectPK === false && $this->isDirty($this->primaryKey)) {
@@ -286,15 +299,20 @@ class ActiveRecord extends \ADODB_Active_Record
      */
     public function refresh(): void
     {
-        $id = $this->{$this->primaryKey};
-        if ($this->isNewRecord() && !is_array($this->primaryKey)) {
-            $id = $this->getLastInsertID();
-        }
-
         try {
-            $model = static::findByPk($id);
-            if ($model) {
-                $this->attributes = $model->getAttributes();
+            if (!$this->isNewRecord()) {
+                $query = self::query();
+                if (is_array($this->primaryKey)) {
+                    foreach($this->primaryKey as $attribute) {
+                        $query->where($attribute, $this->{$attribute});
+                    }
+                } else {
+                    $query->where($this->primaryKey, $this->{$this->primaryKey});
+                }
+                $model = $query->findOne();
+                if ($model) {
+                    $this->attributes = $model->getAttributes();
+                }
             }
         } catch (\Throwable $exception) {
             debug_print_backtrace();
