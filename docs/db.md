@@ -86,7 +86,6 @@ $result = DB::use('mysql')->getActiveRecordsClass(
 ## Transaction
 
 ```php
-
 $db = DB::use('mysql');
 
 // transaction method expecting a callable which return a bool value.

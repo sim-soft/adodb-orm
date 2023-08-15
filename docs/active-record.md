@@ -28,15 +28,15 @@ class User extends ActiveRecord
     protected array $fillable = [];
 
     /**
-     * @var array Attributes casts. Supported casts int, bool, float, string, array 
-     * 
+     * @var array Attributes casts. Supported casts int, bool, float, string, array
+     *
      * protected array $casts = [
      *  'attribute1' => 'int',
      *  'attribute2' => 'bool',
      *   ...
      * ];
      */
-    protected array $casts = [];   
+    protected array $casts = [];
 }
 
 ```
@@ -79,6 +79,39 @@ $user->save();
 
 
 ```
+
+## Transaction
+Perform insert/ update for multiple query, either one query failed will rollback the transaction.
+The callback passed to transaction() method should always return a boolean value.
+```php
+$user = new User();
+$user->fill([
+    'first_name' => 'john',
+    'last_name' => 'doe2',
+    'dob' => '2000-01-01',
+])->transaction(function(){
+    $status = $this->save();
+    if ($status) {
+        $status = (new Address())->fill([
+                    'unit' => '1-2-3',
+                    'street' => 'Happy Lane',
+                    'country' => 'USA',
+                    ])->save();
+    }
+
+    if ($status) {
+        $status = (new Contact())->fill([
+                    'email' => 'sample@email.com',
+                    'mobile' => '0123456789',
+                    'tel' => '0128888888',
+                    ])->save();
+    }
+
+    return $status; // Should return bool true/ false.
+});
+```
+
+
 
 ## Retrieve Data
 ```php
