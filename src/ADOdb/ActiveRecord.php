@@ -4,6 +4,7 @@ namespace Simsoft\ADOdb;
 
 use Simsoft\ADOdb\Builder\ActiveQuery;
 use Simsoft\ADOdb\Traits\Error;
+use Throwable;
 
 /**
  * class ActiveRecord.
@@ -156,13 +157,23 @@ class ActiveRecord extends \ADODB_Active_Record
     }
 
     /**
+     * Determine is the current model is existed. not new.
+     *
+     * @return bool
+     */
+    public function exist(): bool
+    {
+        return $this->_saved;
+    }
+
+    /**
      * Determine is the current model is new record.
      *
      * @return bool
      */
     public function isNewRecord(): bool
     {
-        return !$this->_saved;
+        return !$this->exist();
     }
 
     /**
@@ -314,7 +325,7 @@ class ActiveRecord extends \ADODB_Active_Record
                     $this->attributes = $model->getAttributes();
                 }
             }
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             debug_print_backtrace();
             error_log($exception->getMessage(), 0);
         }
@@ -367,6 +378,28 @@ class ActiveRecord extends \ADODB_Active_Record
     }
 
     /**
+     * Utility method to check is an attribute's value is unique within the table.
+     *
+     * @param string $attribute The attribute's name to be checked.
+     * @param mixed $value The attribute's value to be checked.
+     * @return bool
+     */
+    protected function unique(string $attribute, mixed $value): bool
+    {
+        try {
+            $query = self::query()->where($attribute, $value);
+            if ($this->exist()) {
+                $query->not($this->primaryKey, $this->protectPK ? $this->getKey() : $this->previousPK);
+            }
+            return empty($query->findOne());
+
+        } catch (Throwable $throwable) {
+            $this->addError($throwable->getMessage());
+        }
+        return false;
+    }
+
+    /**
      * Called before a model is saved
      *
      * @return void
@@ -400,9 +433,33 @@ class ActiveRecord extends \ADODB_Active_Record
         $this->beforeSave();
         if (parent::save()) {
             $this->afterSave();
-            return true;
+            return !$this->hasError();
         }
+
+        $this->addError($this->ErrorMsg());
         return false;
+    }
+
+    /**
+     * Perform transaction.
+     *
+     * @param callable $callback Callback to perform the insert/ update operation.
+     * @return bool
+     */
+    public function transaction(callable $callback): bool
+    {
+        return DB::use($this->_dbat)->transaction($callback);
+    }
+
+    /**
+     * Perform smart transaction.
+     *
+     * @param callable $callback Callback to perform the insert/ update operation.
+     * @return bool
+     */
+    public function smartTransaction(callable $callback): bool
+    {
+        return DB::use($this->_dbat)->smartTransaction($callback);
     }
 
     /**
@@ -460,7 +517,7 @@ class ActiveRecord extends \ADODB_Active_Record
     {
         try {
             return $query->first();
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             return null;
         }
     }
@@ -475,7 +532,7 @@ class ActiveRecord extends \ADODB_Active_Record
     {
         try {
             return $query->findAll();
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             return [];
         }
     }
