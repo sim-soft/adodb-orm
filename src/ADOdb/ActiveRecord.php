@@ -448,7 +448,12 @@ class ActiveRecord extends \ADODB_Active_Record
      */
     public function transaction(callable $callback): bool
     {
-        return DB::use($this->_dbat)->transaction($callback);
+        $db = DB::use($this->_dbat);
+        $status = $db->transaction($callback);
+        if ($status === false) {
+            $this->addError($db->getErrorMessage());
+        }
+        return $status;
     }
 
     /**
@@ -459,7 +464,12 @@ class ActiveRecord extends \ADODB_Active_Record
      */
     public function smartTransaction(callable $callback): bool
     {
-        return DB::use($this->_dbat)->smartTransaction($callback);
+        $db = DB::use($this->_dbat);
+        $status = $db->smartTransaction($callback);
+        if ($status === false) {
+            $this->addError($db->getErrorMessage());
+        }
+        return $status;
     }
 
     /**

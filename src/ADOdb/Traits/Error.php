@@ -32,9 +32,11 @@ trait Error
      * @param string $message The error message.
      * @return void
      */
-    public function addError(string $message): void
+    public function addError(string $message = ''): void
     {
-        $this->errors[] = $message;
+        if ($message) {
+            $this->errors[] = $message;
+        }
     }
 
     /**

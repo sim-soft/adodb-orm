@@ -112,6 +112,16 @@ final class DB
     }
 
     /**
+     * Get error message.
+     *
+     * @return string
+     */
+    public function getErrorMessage(): string
+    {
+        return $this->db->errorMsg();
+    }
+
+    /**
      * Performs insert data.
      *
      * @param string $table      the table name
@@ -190,15 +200,10 @@ final class DB
         if ($this->db->beginTrans()) {
             if ($query() === true) {
                 $this->db->commitTrans();
-
                 return true;
             }
             $this->db->rollbackTrans();
-
-            debug_print_backtrace();
-            trigger_error($this->db->errorMsg(), E_USER_ERROR);
         }
-
         return false;
     }
 
@@ -222,13 +227,7 @@ final class DB
             $this->db->failTrans();
         }
 
-        if ($this->db->hasFailedTrans()) {
-            debug_print_backtrace();
-            trigger_error($this->db->errorMsg(), E_USER_ERROR);
-        }
-
         $this->db->completeTrans();
-
         return true;
     }
 
