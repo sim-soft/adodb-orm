@@ -285,6 +285,31 @@ class ActiveRecord extends \ADODB_Active_Record
     }
 
     /**
+     * Update attributes
+     *
+     * @param array $attributes Attribute => new value pairs.
+     * @return bool
+     */
+    public function updateAttributes(array $attributes): bool
+    {
+        if ($this->isNewRecord()) {
+            return false;
+        }
+
+        $status = DB::use($this->_dbat)->update(
+            $this->_table,
+            $attributes,
+            Query::db()->where($this->primaryKey, $this->getKey()),
+        );
+
+        if ($status) {
+            $this->refresh();
+        }
+
+        return $status;
+    }
+    
+    /**
      * Performs insert operation
      *
      * @return bool
