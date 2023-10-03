@@ -308,7 +308,7 @@ class ActiveRecord extends \ADODB_Active_Record
 
         return $status;
     }
-    
+
     /**
      * Performs insert operation
      *
@@ -320,8 +320,9 @@ class ActiveRecord extends \ADODB_Active_Record
         if ($attributes) {
             $status = DB::use($this->_dbat)->insert($this->_table, $attributes);
             if ($status) {
-                $this->refresh();
                 $this->_saved = true;
+                $this->{$this->primaryKey} = DB::use($this->_dbat)->insert_Id($this->_table);
+                $this->refresh();
             }
             return $status;
         }
