@@ -59,9 +59,23 @@ echo Query::from('user')
             ->orBetweenDateInterval('dob', '1999-08-01', 7)      // OR user.dob >= '1999-08-01' AND user.dob < '1999-08-01' + INTERVAL 7 DAY
             ->notBetweenDateInterval('dob', '1999-08-01', 7)     // AND user.dob < '1999-08-01' AND user.dob >= '1999-08-01' + INTERVAL 7 DAY
             ->orNotBetweenDateInterval('dob', '1999-08-01', 7);  // OR user.dob < '1999-08-01' AND user.dob >= '1999-08-01' + INTERVAL 7 DAY
-
-
 ```
+
+## Exists Clauses
+```php
+echo Query::from('user')->exists(Query::from('account')->whereRaw('{id} = {user.account_id}'))
+//Output: SELECT * FROM `user` WHERE EXISTS ( SELECT * FROM `account` WHERE `account`.`id` = `user`.`account_id` )
+
+echo Query::from('user')->where('status', 1)->orExists(Query::from('account')->whereRaw('{id} = {user.account_id}'))
+//Output: SELECT * FROM `user` WHERE `user`.`status` = 1 OR EXISTS ( SELECT * FROM `account` WHERE `account`.`id` = `user`.`account_id` )
+
+echo Query::from('user')->notExists(Query::from('account')->whereRaw('{id} = {user.account_id}'))
+//Output: SELECT * FROM `user` WHERE NOT EXISTS ( SELECT * FROM `account` WHERE `account`.`id` = `user`.`account_id` )
+
+echo Query::from('user')->where('status', 1)->orNotExists(Query::from('account')->whereRaw('{id} = {user.account_id}'))
+//Output: SELECT * FROM `user` WHERE `user`.`status` = 1 OR NOT EXISTS ( SELECT * FROM `account` WHERE `account`.`id` = `user`.`account_id` )
+```
+
 ## Other Clauses
 ```php
 echo Query::from('user')

@@ -79,8 +79,13 @@ class ActiveQuery
         protected DB|string|null $db = null,
         protected ?string $class = null
     ){
-        if ($this->class && $this->db === null) {
-            $this->db = (new $this->class())->_dbat;
+        $model = $this->class ? new $this->class(): null;
+        if ($model && $this->db === null) {
+            $this->db = $model->_dbat;
+        }
+
+        if ($model && $this->table === null) {
+            $this->from($model->_table);
         }
 
         if (is_string($this->db)) {
@@ -1215,6 +1220,60 @@ class ActiveQuery
     public function orNotBetweenDateInterval(string $attribute, string $startDate, int $interval = 7): self
     {
         return $this->betweenDateInterval($attribute, $startDate, $interval, false, 'OR');
+    }
+
+    /**
+     * Implement exists condition.
+     *
+     * @param ActiveQuery $query The query object.
+     * @param bool $is Is exists condition. Default: true.
+     * @param string $logicalOperator The logical operator. Either 'AND' or 'OR'
+     * @return $this
+     */
+    public function exists(ActiveQuery $query, bool $is = true, string $logicalOperator = 'AND'): static
+    {
+        $this->onCondition(($is ? '': 'NOT ') . 'EXISTS (', $logicalOperator);
+
+        $this->onCondition($query, '');
+        $binds = $query->getBinds();
+        if ($binds) {
+            $this->binds = [...$this->binds, ...$binds];
+        }
+
+        return $this->onCondition(')');
+    }
+
+    /**
+     * The not exists condition.
+     *
+     * @param ActiveQuery $query The query object.
+     * @return $this
+     */
+    public function notExists(ActiveQuery $query): static
+    {
+        return $this->exists($query, false);
+    }
+
+    /**
+     * The or exists condition.
+     *
+     * @param ActiveQuery $query The query object.
+     * @return $this
+     */
+    public function orExists(ActiveQuery $query): static
+    {
+        return $this->exists($query, logicalOperator: 'OR');
+    }
+
+    /**
+     * The or not exists condition.
+     *
+     * @param ActiveQuery $query The query object.
+     * @return $this
+     */
+    public function orNotExists(ActiveQuery $query): static
+    {
+        return $this->exists($query, false, 'OR');
     }
 
     /**
