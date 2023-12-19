@@ -502,18 +502,33 @@ class ActiveQuery
      */
     public function getActiveRecords(string $activeRecordClass): array
     {
-        $this->getConditionSQLStatement();
-
         $this->renderSQLDebug();
 
         $model = new $activeRecordClass();
+        $rows = $this->from($model->_table)
+            ->db($model->_dbat)->getAll();
 
-        return $this->from($model->_table)->db($model->_dbat)->getDB()->getActiveRecordsClass(
-            $activeRecordClass,
-            $model->_table,
-            $this->getConditionSQLStatement(),
-            $this->getBinds()
-        );
+        $results = [];
+        if ($rows) {
+            foreach($rows as $row) {
+                /** @var ActiveRecord $model */
+                $model = new $activeRecordClass();
+                $model->_saved = true;
+
+                $protectedKey = $model->isKeyProtected();
+                if ($protectedKey) {
+                    $model->protectKey(false);
+                }
+
+                $model->fill(array_filter($row, function($key) {
+                    return is_string($key);
+                }, ARRAY_FILTER_USE_KEY));
+                $model->protectKey($protectedKey);
+                $results[] = $model;
+            }
+        }
+
+        return $results;
     }
 
     /**

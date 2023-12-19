@@ -73,13 +73,7 @@ class ActiveRecord extends \ADODB_Active_Record
     {
         parent::__construct($table, $pkeyarr, $db);
 
-        if ($this->protectPK && $this->primaryKey) {
-            if (is_array($this->primaryKey)) {
-                $this->guarded = array_merge($this->guarded, $this->primaryKey);
-            } else {
-                $this->guarded[] = $this->primaryKey;
-            }
-        }
+        $this->protectKey();
     }
 
     /**
@@ -174,6 +168,55 @@ class ActiveRecord extends \ADODB_Active_Record
     public function isNewRecord(): bool
     {
         return !$this->exist();
+    }
+
+    /**
+     * Determine is primary key protected.
+     *
+     * @return bool
+     */
+    public function isKeyProtected(): bool
+    {
+        return $this->protectPK;
+    }
+
+    /**
+     * Protected primary key from modification during mass assignment.
+     *
+     * @param bool $enable Enable primary key protection. Default: true.
+     * @return $this
+     */
+    public function protectKey(bool $enable = true): static
+    {
+        $this->protectPK = $enable;
+
+        if (empty($this->primaryKey)) {
+            return $this;
+        }
+
+        if ($this->protectPK) {
+            if (is_array($this->primaryKey)) {
+                $this->guarded = array_merge($this->guarded, $this->primaryKey);
+            } else {
+                $this->guarded[] = $this->primaryKey;
+            }
+        } else {
+            if (is_array($this->primaryKey)) {
+                foreach($this->guarded as $key => $attribute) {
+                    if (in_array($attribute, $this->primaryKey)) {
+                        unset($this->guarded[$key]);
+                    }
+                }
+            } else {
+                foreach($this->guarded as $key => $attribute) {
+                    if ($attribute == $this->primaryKey) {
+                        unset($this->guarded[$key]);
+                    }
+                }
+            }
+        }
+
+        return $this;
     }
 
     /**
@@ -567,6 +610,7 @@ class ActiveRecord extends \ADODB_Active_Record
     protected function hasMultiple(ActiveQuery $query): array
     {
         try {
+            $this->hasMany();
             return $query->findAll();
         } catch (Throwable $exception) {
             return [];
