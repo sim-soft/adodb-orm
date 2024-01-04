@@ -181,6 +181,20 @@ class ActiveRecord extends \ADODB_Active_Record
     }
 
     /**
+     * Get primary key attribute names.
+     *
+     * @return array
+     */
+    public function getPrimaryKeyAttributes(): array
+    {
+        if (is_array($this->primaryKey)) {
+            return $this->primaryKey;
+        }
+
+        return (array) $this->primaryKey;
+    }
+
+    /**
      * Protected primary key from modification during mass assignment.
      *
      * @param bool $enable Enable primary key protection. Default: true.
@@ -195,23 +209,12 @@ class ActiveRecord extends \ADODB_Active_Record
         }
 
         if ($this->protectPK) {
-            if (is_array($this->primaryKey)) {
-                $this->guarded = array_merge($this->guarded, $this->primaryKey);
-            } else {
-                $this->guarded[] = $this->primaryKey;
-            }
+            $this->guarded = array_merge($this->guarded, $this->getPrimaryKeyAttributes());
         } else {
-            if (is_array($this->primaryKey)) {
-                foreach($this->guarded as $key => $attribute) {
-                    if (in_array($attribute, $this->primaryKey)) {
-                        unset($this->guarded[$key]);
-                    }
-                }
-            } else {
-                foreach($this->guarded as $key => $attribute) {
-                    if ($attribute == $this->primaryKey) {
-                        unset($this->guarded[$key]);
-                    }
+            $pks = $this->getPrimaryKeyAttributes();
+            foreach($this->guarded as $key => $attribute) {
+                if (in_array($attribute, $pks)) {
+                    unset($this->guarded[$key]);
                 }
             }
         }

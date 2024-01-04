@@ -523,6 +523,11 @@ class ActiveQuery
                 $model->fill(array_filter($row, function($key) {
                     return is_string($key);
                 }, ARRAY_FILTER_USE_KEY));
+
+                foreach($model->getPrimaryKeyAttributes() as $attribute) {
+                    $model->$attribute = $row[$attribute];
+                }
+
                 $model->protectKey($protectedKey);
                 $results[] = $model;
             }
