@@ -525,7 +525,7 @@ class ActiveQuery
                 }, ARRAY_FILTER_USE_KEY));
 
                 foreach($model->getPrimaryKeyAttributes() as $attribute) {
-                    $model->$attribute = $row[$attribute];
+                    $model->$attribute = $row[$attribute] ?? null;
                 }
 
                 $model->protectKey($protectedKey);
