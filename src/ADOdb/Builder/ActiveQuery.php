@@ -341,6 +341,7 @@ class ActiveQuery
 
         $condition = $this->getConditionSQLStatement();
         if ($condition) {
+            $sql .= ' ' . implode(' ', $this->joins);
             $sql .= " WHERE {$condition}";
         }
 
@@ -1526,7 +1527,7 @@ class ActiveQuery
         return $this->mapQualifier(implode(' ', array_filter([
             $selects,
             $from,
-            empty($this->joins) ? null : implode(' ', $this->joins),
+            empty($this->joins) || $this->returnConditionOnly ? null : implode(' ', $this->joins),
             empty($this->conditions) ? null : (($this->returnConditionOnly ? '': 'WHERE ') . implode(' ', $this->conditions)),
             empty($this->groupBys) ? null : 'GROUP BY ' . implode(', ', $this->groupBys),
             empty($this->having) ? null : 'HAVING ' . implode(', ', $this->having),
