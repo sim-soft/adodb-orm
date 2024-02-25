@@ -577,6 +577,16 @@ class ActiveRecord extends \ADODB_Active_Record
         return self::query()->where($this->primaryKey, $key)->findOne();
     }
 
+    public static function findOne(string|int|null $key = null): ?static
+    {
+        try {
+            return $key === null ? self::query()->findOne() : (new static)->findByPk($key);
+        } catch (Throwable $throwable) {
+            error_log($throwable->getMessage());
+        }
+        return null;
+    }
+
     /**
      * Get all attribute values.
      */
