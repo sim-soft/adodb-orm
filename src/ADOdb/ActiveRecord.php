@@ -77,7 +77,7 @@ class ActiveRecord extends \ADODB_Active_Record
     }
 
     /**
-     * {@inheritdoc}
+     * Implement magic settle.
      */
     public function __set($name, $value)
     {
@@ -113,7 +113,7 @@ class ActiveRecord extends \ADODB_Active_Record
     }
 
     /**
-     * {@inheritdoc }
+     * Implement magic isset
      */
     public function __isset(string $name)
     {
@@ -568,7 +568,7 @@ class ActiveRecord extends \ADODB_Active_Record
     /**
      * Find by primary key
      *
-     * @param mixed $key
+     * @param mixed $key Record primary key.
      * @return $this|null
      * @throws \Exception
      */
@@ -577,10 +577,16 @@ class ActiveRecord extends \ADODB_Active_Record
         return self::query()->where($this->primaryKey, $key)->findOne();
     }
 
+    /**
+     * Find one
+     *
+     * @param string|int|null $key Record primary key.
+     * @return static|null
+     */
     public static function findOne(string|int|null $key = null): ?static
     {
         try {
-            return $key === null ? self::query()->findOne() : (new static)->findByPk($key);
+            return $key === null ? self::query()->findOne() : (new static())->findByPk($key);
         } catch (Throwable $throwable) {
             error_log($throwable->getMessage());
         }
@@ -609,7 +615,7 @@ class ActiveRecord extends \ADODB_Active_Record
     {
         try {
             return $query->first();
-        } catch (Throwable $exception) {
+        } catch (Throwable $throwable) {
             return null;
         }
     }
@@ -623,9 +629,9 @@ class ActiveRecord extends \ADODB_Active_Record
     protected function hasMultiple(ActiveQuery $query): array
     {
         try {
-            $this->hasMany();
+            //$this->hasMany();
             return $query->findAll();
-        } catch (Throwable $exception) {
+        } catch (Throwable $throwable) {
             return [];
         }
     }
