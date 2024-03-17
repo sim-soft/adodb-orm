@@ -68,8 +68,9 @@ class ActiveRecord extends \ADODB_Active_Record
      * @param string|bool $table The table name.
      * @param array|bool $pkeyarr The primary key.
      * @param mixed $db The connection obj.
+     * @param array $options Additional options.
      */
-    public function __construct($table = false, $pkeyarr=false, $db=false)
+    public function __construct($table = false, $pkeyarr=false, $db=false, $options = [])
     {
         $this->protectKey();
     }

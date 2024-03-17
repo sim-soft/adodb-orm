@@ -12,6 +12,9 @@
     },
     "license": "MIT",
     "autoload": {
+        "files": [
+          "vendor/adodb/adodb-php/adodb-active-recordx.inc.php"
+        ],
         "psr-4": {
             "Simsoft\\ADOdb\\": "src/ADOdb"
         }

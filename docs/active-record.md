@@ -61,7 +61,7 @@ $user->save();
 
 
 // Update user where its primary key is 2
-$user = (new User())->findByPk(2);
+$user = User::findOne(2);
 $user->first_name = 'john';
 $user->last_name = 'doe2';
 $user->dob = '2000-01-01';
@@ -69,7 +69,7 @@ $user->save();
 
 
 // Update user where its primary key is 2 with mass assignment
-$user = (new User())->findByPk(2);
+$user = User::findOne(2);
 $user->fill([
     'first_name' => 'john',
     'last_name' => 'doe2',
@@ -116,7 +116,7 @@ $user->fill([
 ## Retrieve Data
 ```php
 // Get user info by primary key is 2
-$user = (new User())->findByPk(2);
+$user = User::findOne(2);
 echo $user->getKey();   // display primary key value
 echo $user->first_name;
 echo $user->last_name;
