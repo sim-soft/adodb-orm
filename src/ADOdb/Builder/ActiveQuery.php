@@ -821,7 +821,7 @@ class ActiveQuery
      */
     public function where(
         string|callable $attribute,
-        ?string $operator = '=',
+        mixed $operator = '=',
         mixed $value = null,
         string $logicalOperator = 'AND'
     ): self {

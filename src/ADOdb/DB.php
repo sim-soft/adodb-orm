@@ -4,6 +4,7 @@ namespace Simsoft\ADOdb;
 
 use ADOConnection;
 use Simsoft\ADOdb\Builder\ActiveQuery;
+use Throwable;
 
 /**
  * Class DB.
@@ -36,7 +37,7 @@ use Simsoft\ADOdb\Builder\ActiveQuery;
  * @method int                insert_Id(string $table='', string $column='')
  * @method string             dbDate(float $timestamp)
  */
-final class DB
+class DB
 {
     /** @var array */
     private static array $config = [];
@@ -47,9 +48,9 @@ final class DB
     /**
      * Constructor.
      *
-     * @param ADOConnection|null $db the database connection object
+     * @param ADOConnection $db
      */
-    public function __construct(protected ?ADOConnection $db = null)
+    public function __construct(protected ADOConnection $db)
     {
     }
 
@@ -67,14 +68,11 @@ final class DB
             $arguments[0] = &$arguments[0];
         }
 
-        /** @var callable $callback */
-        $callback = [$this->db, $name];
-
-        $result = call_user_func_array($callback, $arguments);
+        $result = call_user_func_array([$this->db, $name], $arguments);
         if ($result === false) {
             debug_print_backtrace();
             $message = $this->db->errorMsg();
-            trigger_error(empty($message) ? "{$name}: query error." : $message, E_USER_ERROR);
+            trigger_error(empty($message) ? "$name: query error." : $message, E_USER_ERROR);
         }
 
         return $result;
@@ -94,6 +92,7 @@ final class DB
 
     /**
      * Get database type.
+     * @return string
      */
     public function getDatabaseType(): string
     {
@@ -255,7 +254,7 @@ final class DB
 
         try {
             if (!array_key_exists($name, self::$config)) {
-                throw new \Exception("DB connection '{$name}' missing config data.");
+                throw new \Exception("DB connection '$name' missing config data.");
             }
 
             extract(self::$config[$name]);
@@ -263,7 +262,7 @@ final class DB
             /** @var string $driver */
             $db = ADONewConnection($driver);
             if ($db === false) {
-                throw new \Exception("DB failed to create connection '{$name}'");
+                throw new \Exception("DB failed to create connection '$name'");
             }
 
             /*
@@ -289,13 +288,13 @@ final class DB
                 }
 
                 \ADODB_Active_Record::SetDatabaseAdapter($db, $name);
-                self::$connections[$name] = $db;
+                return self::$connections[$name] = $db;
             } else {
-                throw new \Exception("DB connection '{$name}' failed to connect.");
+                throw new \Exception("DB connection '$name' failed to connect.");
             }
-        } catch (\Exception $e) {
+        } catch (Throwable $throwable) {
             debug_print_backtrace();
-            trigger_error($e->getMessage(), E_USER_ERROR);
+            trigger_error($throwable->getMessage(), E_USER_ERROR);
         }
 
         return null;
@@ -310,7 +309,7 @@ final class DB
      */
     public static function use(string $name): self
     {
-        return new DB(self::connectTo($name));
+        return new static(static::connectTo($name));
     }
 
     /**

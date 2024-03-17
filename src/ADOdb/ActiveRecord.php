@@ -135,7 +135,7 @@ class ActiveRecord extends \ADODB_Active_Record
             return $this->relations[$name] = $this->$name();
         }
 
-        if (array_key_exists($name, $this->casts)) {
+        if (array_key_exists($name, $this->attributes) && array_key_exists($name, $this->casts)) {
             return match($this->casts[$name]) {
                 'int', 'integer' => (int) $this->attributes[$name] ?? 0,
                 'bool', 'boolean' => (bool) $this->attributes[$name] ?? false,
@@ -596,11 +596,7 @@ class ActiveRecord extends \ADODB_Active_Record
      */
     public function getAttributes(): array
     {
-        return iterator_to_array(call_user_func(function(){
-            foreach ($this->GetAttributeNames() as $attribute) {
-                yield $attribute => $this->{$attribute};
-            }
-        }));
+        return $this->attributes;
     }
 
     /**
