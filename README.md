@@ -18,6 +18,7 @@ $ composer require simsoft/adodb-orm
 
 ```php
 require_once "vendor/autoload.php";
+require_once "vendor/adodb/adodb-php/adodb-active-recordx.inc.php";
 
 use Simsoft\ADOdb\DB;
 use Simsoft\ADOdb\Query;
@@ -75,6 +76,7 @@ $result = DB::use('mysql')->debug()->getArray('SELECT * FROM user WHERE name LIK
 
 ```php
 require_once "vendor/autoload.php";
+require_once "vendor/adodb/adodb-php/adodb-active-recordx.inc.php";
 
 use Simsoft\ADOdb\DB;
 use Simsoft\ADOdb\Query;
@@ -122,6 +124,7 @@ class User extends ActiveRecord
 
 ```php
 require_once "vendor/autoload.php";
+require_once "vendor/adodb/adodb-php/adodb-active-recordx.inc.php";
 
 use Simsoft\ADOdb\DB;
 use Model\User;

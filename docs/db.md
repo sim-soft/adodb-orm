@@ -7,6 +7,7 @@ Basic usage of DB class.
 
 ```php
 require_once "vendor/autoload.php";
+require_once "vendor/adodb/adodb-php/adodb-active-recordx.inc.php";
 
 use Simsoft\ADOdb\DB;
 
