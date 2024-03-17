@@ -281,7 +281,7 @@ class ActiveQuery
      */
     public function getDB(): DB
     {
-        if (empty($this->db)) {
+        if ($this->db === null) {
             debug_print_backtrace();
             throw new \Exception(__CLASS__ . ": 'connection' is not set.");
         }

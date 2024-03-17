@@ -71,8 +71,6 @@ class ActiveRecord extends \ADODB_Active_Record
      */
     public function __construct($table = false, $pkeyarr=false, $db=false)
     {
-        parent::__construct($table, $pkeyarr, $db);
-
         $this->protectKey();
     }
 

@@ -41,15 +41,15 @@ final class DB
     /** @var array */
     private static array $config = [];
 
-    /** @var array */
+    /** @var ADOConnection[] */
     private static array $connections = [];
 
     /**
      * Constructor.
      *
-     * @param ADOConnection $db the database connection object
+     * @param ADOConnection|null $db the database connection object
      */
-    public function __construct(protected ADOConnection $db)
+    public function __construct(protected ?ADOConnection $db = null)
     {
     }
 
@@ -239,20 +239,21 @@ final class DB
     public static function init(array $config): void
     {
         self::$config = $config;
-        foreach (self::$config as $name => $config) {
-            self::connectTo($name);
-        }
     }
 
     /**
      * Connect to a database connection.
      *
      * @param string $name the database connection name
+     * @return ADOConnection|null
      */
-    public static function connectTo(string $name): void
+    public static function connectTo(string $name): ?ADOConnection
     {
-        try {
+        if (array_key_exists($name, self::$connections)) {
+            return self::$connections[$name];
+        }
 
+        try {
             if (!array_key_exists($name, self::$config)) {
                 throw new \Exception("DB connection '{$name}' missing config data.");
             }
@@ -296,6 +297,8 @@ final class DB
             debug_print_backtrace();
             trigger_error($e->getMessage(), E_USER_ERROR);
         }
+
+        return null;
     }
 
     /**
@@ -307,11 +310,18 @@ final class DB
      */
     public static function use(string $name): self
     {
-        if (!array_key_exists($name, self::$connections)) {
-            self::connectTo($name);
-        }
+        return new DB(self::connectTo($name));
+    }
 
-        return new DB(self::$connections[$name]);
+    /**
+     * Get connection object.
+     *
+     * @param string $name The database connection name.
+     * @return ADOConnection|null
+     */
+    public static function getConnection(string $name): ?ADOConnection
+    {
+        return self::connectTo($name);
     }
 
     /**
@@ -337,7 +347,7 @@ final class DB
     public static function eStr(string $value): string
     {
         if (self::$connections) {
-            return current(self::$connections)->escape($value);
+            return current(self::$connections)->addQ($value);
         }
         return $value;
     }
