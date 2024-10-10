@@ -1108,7 +1108,7 @@ class ActiveQuery
                 $this->binds[] = $startDate;
                 $this->binds[] = $endDate;
 
-                return $this->onCondition("{$attribute} >= {$this->placeHolder} AND {$attribute} < {$this->placeHolder}", $logicalOperator);
+                return $this->onCondition("{$attribute} >= {$this->placeHolder} AND {$attribute} <= {$this->placeHolder}", $logicalOperator);
             }
 
             if ($startDate && $endDate === null) {
@@ -1120,7 +1120,7 @@ class ActiveQuery
             if ($startDate === null && $endDate) {
                 $this->binds[] = $endDate;
 
-                return $this->onCondition("{$attribute} < {$this->placeHolder}", $logicalOperator);
+                return $this->onCondition("{$attribute} <= {$this->placeHolder}", $logicalOperator);
             }
         } else {
             if ($startDate && $endDate) {
@@ -1139,7 +1139,7 @@ class ActiveQuery
             if ($startDate === null && $endDate) {
                 $this->binds[] = $endDate;
 
-                return $this->onCondition("{$attribute} >= {$this->placeHolder}", $logicalOperator);
+                return $this->onCondition("{$attribute} > {$this->placeHolder}", $logicalOperator);
             }
         }
 
