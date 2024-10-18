@@ -200,6 +200,17 @@ class ActiveQuery
             $this->sqlStatement = $this->buildSQL();
         }
 
+        $limit = match (true) {
+            //$this->returnConditionOnly === true => null,
+            $this->limit && $this->offset !== null => "LIMIT {$this->offset}, {$this->limit}",
+            $this->limit && $this->offset === null => "LIMIT {$this->limit}",
+            default => null,
+        };
+
+        if ($limit) {
+            return $this->sqlStatement . ' ' . $limit;
+        }
+
         return $this->sqlStatement;
     }
 
@@ -1517,13 +1528,6 @@ class ActiveQuery
             $this->returnConditionOnly = true;
         }
 
-        $limit = match (true) {
-            //$this->returnConditionOnly === true => null,
-            $this->limit && $this->offset => "LIMIT {$this->offset}, {$this->limit}",
-            $this->limit && $this->offset === null => "LIMIT {$this->limit}",
-            default => null,
-        };
-
         return $this->mapQualifier(implode(' ', array_filter([
             $selects,
             $from,
@@ -1532,7 +1536,6 @@ class ActiveQuery
             empty($this->groupBys) ? null : 'GROUP BY ' . implode(', ', $this->groupBys),
             empty($this->having) ? null : 'HAVING ' . implode(', ', $this->having),
             empty($this->orderBys) ? null : 'ORDER BY ' . implode(', ', $this->orderBys),
-            $limit,
         ])));
     }
 }
