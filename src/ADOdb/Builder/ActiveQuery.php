@@ -122,7 +122,7 @@ class ActiveQuery
                     : $db->{$name}((string) $this, $this->getBinds());
             }
 
-            throw new \Exception(get_called_class() . ": Method {$name} not exist.");
+            throw new \Exception(get_called_class() . ": Method $name not exist.");
         } catch (\Exception $e) {
             debug_print_backtrace();
             trigger_error($e->getMessage(), E_USER_ERROR);
@@ -203,8 +203,8 @@ class ActiveQuery
 
         $limit = match (true) {
             //$this->returnConditionOnly === true => null,
-            $this->limit && $this->offset !== null => "LIMIT {$this->offset}, {$this->limit}",
-            $this->limit && $this->offset === null => "LIMIT {$this->limit}",
+            $this->limit && $this->offset !== null => "LIMIT $this->offset, $this->limit",
+            $this->limit && $this->offset === null => "LIMIT $this->limit",
             default => null,
         };
 
@@ -263,7 +263,7 @@ class ActiveQuery
         foreach ($segments as $segment) {
             $value = (array_shift($replace) ?? $search);
             if (!is_numeric($value)) {
-                $value = "'{$value}'";
+                $value = "'$value'";
             }
             $result .= $value . $segment;
         }
