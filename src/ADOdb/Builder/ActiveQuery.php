@@ -3,6 +3,7 @@
 namespace Simsoft\ADOdb\Builder;
 
 use Simsoft\ADOdb\ActiveRecord;
+use Simsoft\ADOdb\Collection;
 use Simsoft\ADOdb\DB;
 
 /**
@@ -455,6 +456,16 @@ class ActiveQuery
         return $this->class === null
                 ? $this->getAll()
                 : $this->getActiveRecords($this->class);
+    }
+
+    /**
+     * Get collection.
+     *
+     * @return Collection
+     */
+    public function get(): Collection
+    {
+        return new Collection($this);
     }
 
     /**
