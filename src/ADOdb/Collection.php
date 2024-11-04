@@ -77,9 +77,11 @@ class Collection implements Iterator
     /**
      * Get total record count.
      *
+     * @param string $field Field to be used for count.
+     * @return int
      * @throws Exception
      */
-    public function getTotalCount(?string $field = null): int
+    public function getTotalCount(string $field = '*'): int
     {
         if ($this->totalCount === null) {
             $this->totalCount = $this->query->count($field);
