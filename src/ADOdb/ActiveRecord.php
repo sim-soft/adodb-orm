@@ -289,10 +289,10 @@ class ActiveRecord extends \ADODB_Active_Record
      *
      * @return bool
      */
-    public function update(): bool
+    public function xUpdate(): bool
     {
         if ($this->isNewRecord()) {
-            return $this->insert();
+            return $this->xInsert();
         }
 
         $attributes = array_intersect_key($this->attributes, $this->dirtyAttributes);
@@ -359,7 +359,7 @@ class ActiveRecord extends \ADODB_Active_Record
      *
      * @return bool
      */
-    public function insert(): bool
+    public function xInsert(): bool
     {
         $attributes = array_intersect_key($this->attributes, $this->dirtyAttributes);
         if ($attributes) {
@@ -502,7 +502,7 @@ class ActiveRecord extends \ADODB_Active_Record
         }
 
         $this->beforeSave();
-        if (parent::save()) {
+        if ($this->_saved ? $this->xUpdate() : $this->xInsert()) {
             $this->afterSave();
             return !$this->hasError();
         }
