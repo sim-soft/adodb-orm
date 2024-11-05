@@ -2,6 +2,7 @@
 
 namespace Simsoft\ADOdb;
 
+use Exception;
 use Simsoft\ADOdb\Builder\ActiveQuery;
 use Simsoft\ADOdb\Traits\Error;
 use Throwable;
@@ -186,10 +187,6 @@ class ActiveRecord extends \ADODB_Active_Record
      */
     public function getPrimaryKeyAttributes(): array
     {
-        if (is_array($this->primaryKey)) {
-            return $this->primaryKey;
-        }
-
         return (array) $this->primaryKey;
     }
 
@@ -366,7 +363,9 @@ class ActiveRecord extends \ADODB_Active_Record
             $status = DB::use($this->_dbat)->insert($this->_table, $attributes);
             if ($status) {
                 $this->_saved = true;
-                $this->{$this->primaryKey} = DB::use($this->_dbat)->insert_Id($this->_table);
+                if (!is_array($this->primaryKey)) {
+                    $this->{$this->primaryKey} = DB::use($this->_dbat)->insert_Id($this->_table);
+                }
                 $this->refresh();
             }
             return $status;
@@ -569,20 +568,30 @@ class ActiveRecord extends \ADODB_Active_Record
      *
      * @param mixed $key Record primary key.
      * @return $this|null
-     * @throws \Exception
+     * @throws Exception
      */
     public function findByPk(mixed $key): ?static
     {
-        return self::query()->where($this->primaryKey, $key)->findOne();
+        if (is_array($key)) {
+            $query = static::query();
+
+            foreach($key as $attribute => $value) {
+                $query->where($attribute, $value);
+            }
+
+            return $query->findOne();
+        }
+
+        return static::query()->where($this->primaryKey, $key)->findOne();
     }
 
     /**
      * Find one
      *
-     * @param string|int|null $key Record primary key.
+     * @param string|int|array|null $key Record primary key.
      * @return static|null
      */
-    public static function findOne(string|int|null $key = null): ?static
+    public static function findOne(string|int|array|null $key = null): ?static
     {
         try {
             return $key === null ? self::query()->findOne() : (new static())->findByPk($key);
