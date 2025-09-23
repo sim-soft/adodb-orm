@@ -243,11 +243,15 @@ class ActiveRecord extends \ADODB_Active_Record
     /**
      * Check if an attribute is dirty/ its valued changed.
      *
-     * @param string $attribute The attribute name to be checked
+     * @param string|null $attribute The attribute name to be checked
      * @return bool
      */
-    public function isDirty(string $attribute): bool
+    public function isDirty(?string $attribute = null): bool
     {
+        if ($attribute === null) {
+            return !empty($this->dirtyAttributes);
+        }
+
         return array_key_exists($attribute, $this->dirtyAttributes);
     }
 
@@ -352,6 +356,24 @@ class ActiveRecord extends \ADODB_Active_Record
     }
 
     /**
+     * Update all.
+     *
+     * @param array $attributes Attribute and value pair.
+     * @param ActiveQuery|string|false $query
+     * @return bool
+     */
+    public static function updateAll(array $attributes, ActiveQuery|string|false $query = false): bool
+    {
+        $model = new static();
+
+        return DB::use($model->_dbat)->update(
+            $model->_table,
+            $attributes,
+            $query
+        );
+    }
+
+    /**
      * Performs insert operation
      *
      * @return bool
@@ -421,6 +443,22 @@ class ActiveRecord extends \ADODB_Active_Record
             $query->where($this->primaryKey, $this->{$this->primaryKey});
         }
         return DB::use($this->_dbat)->delete($this->_table, $query);
+    }
+
+    /**
+     * Delete all.
+     *
+     * @param ActiveQuery|string|false $query
+     * @return bool
+     */
+    public static function deleteAll(ActiveQuery|string|false $query = false): bool
+    {
+        $model = new static();
+
+        return DB::use($model->_dbat)->delete(
+            $model->_table,
+            $query
+        );
     }
 
     /**
