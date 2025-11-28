@@ -389,7 +389,7 @@ class ActiveQuery
      */
     public function count(string $attribute = '*', ?string $alias = null): int
     {
-        return $this->aggregate(__FUNCTION__, $attribute, $alias);
+        return (int)$this->aggregate(__FUNCTION__, $attribute, $alias);
     }
 
     /**
