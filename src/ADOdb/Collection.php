@@ -65,12 +65,14 @@ class Collection implements Iterator
      * Set current page.
      *
      * @param int $page
+     * @param int|null $size
      * @return $this
      */
-    public function page(int $page = 1): static
+    public function page(int $page = 1, ?int $size = null): static
     {
         $this->page = $page - 1;
         $this->fetchPage = true;
+        $size && $this->size($size);
         return $this;
     }
 
