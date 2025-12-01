@@ -223,7 +223,9 @@ class ActiveQuery
     public function getConditionSQLStatement(): string
     {
         $this->returnConditionOnly = true;
-        return $this->getSQLStatement();
+        return $this->getBinds() === false
+            ? $this->getSQLStatement()
+            : $this->replaceArray($this->placeHolder, $this->getBinds(), $this->getSQLStatement());
     }
 
     /**
