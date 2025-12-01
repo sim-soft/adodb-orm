@@ -154,8 +154,19 @@ class ActiveRecord extends \ADODB_Active_Record
      * Determine is the current model is existed. not new.
      *
      * @return bool
+     * @deprecated Replaced with exists().
      */
     public function exist(): bool
+    {
+        return $this->_saved;
+    }
+
+    /**
+     * Determine is the current model is existed. not new.
+     *
+     * @return bool
+     */
+    public function exists(): bool
     {
         return $this->_saved;
     }
@@ -167,7 +178,7 @@ class ActiveRecord extends \ADODB_Active_Record
      */
     public function isNewRecord(): bool
     {
-        return !$this->exist();
+        return !$this->exists();
     }
 
     /**
@@ -419,7 +430,7 @@ class ActiveRecord extends \ADODB_Active_Record
             }
         } catch (Throwable $exception) {
             debug_print_backtrace();
-            error_log($exception->getMessage(), 0);
+            error_log($exception->getMessage());
         }
     }
 
@@ -496,7 +507,7 @@ class ActiveRecord extends \ADODB_Active_Record
     {
         try {
             $query = self::query()->where($attribute, $value);
-            if ($this->exist()) {
+            if ($this->exists()) {
                 $query->not($this->primaryKey, $this->protectPK ? $this->getKey() : $this->previousPK);
             }
             return empty($query->findOne());
@@ -674,6 +685,7 @@ class ActiveRecord extends \ADODB_Active_Record
             //$this->hasMany();
             return $query->findAll();
         } catch (Throwable $throwable) {
+            error_log($throwable->getMessage());
             return [];
         }
     }
