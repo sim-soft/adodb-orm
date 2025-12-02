@@ -218,14 +218,20 @@ class ActiveQuery
     /**
      * Get condition SQL statement, which is without the SELECT and FROM.
      *
+     * @param bool $full Determine whether to return full SQL statement.
      * @return string
      */
-    public function getConditionSQLStatement(): string
+    public function getConditionSQLStatement(bool $full = false): string
     {
         $this->returnConditionOnly = true;
-        return $this->getBinds() === false
-            ? $this->getSQLStatement()
-            : $this->replaceArray($this->placeHolder, $this->getBinds(), $this->getSQLStatement());
+
+        if ($full) {
+            return $this->getBinds() === false
+                ? $this->getSQLStatement()
+                : $this->replaceArray($this->placeHolder, $this->getBinds(), $this->getSQLStatement());
+        }
+
+        return $this->getSQLStatement();
     }
 
     /**

@@ -145,7 +145,7 @@ class DB
     public function update(string $table, array $attributes = [], ActiveQuery|false|string $conditions = false): bool
     {
         if ($conditions instanceof ActiveQuery) {
-            $conditions = $conditions->getConditionSQLStatement();
+            $conditions = $conditions->getConditionSQLStatement(true);
         }
 
         return $this->db->autoExecute($table, $attributes, 'UPDATE', $conditions);
