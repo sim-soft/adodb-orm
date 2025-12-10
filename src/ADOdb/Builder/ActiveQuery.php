@@ -2,6 +2,7 @@
 
 namespace Simsoft\ADOdb\Builder;
 
+use Exception;
 use Simsoft\ADOdb\ActiveRecord;
 use Simsoft\ADOdb\Collection;
 use Simsoft\ADOdb\DB;
@@ -122,8 +123,8 @@ class ActiveQuery
                     : $db->{$name}((string) $this, $this->getBinds());
             }
 
-            throw new \Exception(get_called_class() . ": Method $name not exist.");
-        } catch (\Exception $e) {
+            throw new Exception(get_called_class() . ": Method $name not exist.");
+        } catch (Exception $e) {
             debug_print_backtrace();
             trigger_error($e->getMessage(), E_USER_ERROR);
         }
@@ -297,13 +298,13 @@ class ActiveQuery
      * Get connection object.
      *
      * @return DB
-     * @throws \Exception
+     * @throws Exception
      */
     public function getDB(): DB
     {
         if ($this->db === null) {
             debug_print_backtrace();
-            throw new \Exception(__CLASS__ . ": 'connection' is not set.");
+            throw new Exception(__CLASS__ . ": 'connection' is not set.");
         }
 
         if (is_string($this->db)) {
@@ -315,7 +316,7 @@ class ActiveQuery
         }
 
         debug_print_backtrace();
-        throw new \Exception(__CLASS__ . ": 'connection' is unknown type.");
+        throw new Exception(__CLASS__ . ": 'connection' is unknown type.");
     }
 
     /**
@@ -339,7 +340,7 @@ class ActiveQuery
      * @param string|null $alias The alias name for the aggregate function value.
      *
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      */
     public function aggregate(string $func, string $attribute, ?string $alias = null): mixed
     {
@@ -379,7 +380,7 @@ class ActiveQuery
      * @param string|null $alias The alias name for the aggregate function value.
      *
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      */
     public function avg(string $attribute, ?string $alias = null): mixed
     {
@@ -393,11 +394,31 @@ class ActiveQuery
      * @param string|null $alias The alias name for the aggregate function value.
      *
      * @return int
-     * @throws \Exception
+     * @throws Exception
      */
     public function count(string $attribute = '*', ?string $alias = null): int
     {
         return (int)$this->aggregate(__FUNCTION__, $attribute, $alias);
+    }
+
+    /**
+     * Count select function.
+     *
+     * Example:
+     *
+     * @param string $attribute The attribute name or raw select SQL statement.
+     * @param string|null $alias The alias name for the aggregate function value.
+     * @param string $table The count table name.
+     * @return int
+     * @throws Exception
+     */
+    public function countSelect(string $attribute = '*', ?string $alias = 'total', string $table = 'count_table'): int
+    {
+        $sql = "SELECT COUNT($attribute) AS $alias FROM ({$this->getSQLStatement()}) AS $table";
+        $this->renderSQLDebug();
+        $this->returnConditionOnly = false;
+        $this->sqlStatement = null;
+        return $this->getDB()->getOne($sql, $this->getBinds());
     }
 
     /**
@@ -407,7 +428,7 @@ class ActiveQuery
      * @param string|null $alias The alias name for the aggregate function value.
      *
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      */
     public function max(string $attribute, ?string $alias = null): mixed
     {
@@ -421,7 +442,7 @@ class ActiveQuery
      * @param string|null $alias The alias name for the aggregate function value.
      *
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      */
     public function min(string $attribute, ?string $alias = null): mixed
     {
@@ -435,7 +456,7 @@ class ActiveQuery
      * @param string|null $alias The alias name for the aggregate function value.
      *
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      */
     public function sum(string $attribute, ?string $alias = null): mixed
     {
@@ -446,7 +467,7 @@ class ActiveQuery
      * Find all active records
      *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function find(): array
     {
@@ -457,7 +478,7 @@ class ActiveQuery
      * Find all active records.
      *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function findAll(): array
     {
@@ -480,7 +501,7 @@ class ActiveQuery
      * Find one active record.
      *
      * @return null|ActiveRecord|array
-     * @throws \Exception
+     * @throws Exception
      */
     public function first(): mixed
     {
@@ -491,7 +512,7 @@ class ActiveQuery
      * Find one active record.
      *
      * @return null|ActiveRecord|array
-     * @throws \Exception
+     * @throws Exception
      */
     public function findOne(): mixed
     {
@@ -505,7 +526,7 @@ class ActiveQuery
      * @param array $attributes New values for the attribute => value pairs to be saved.
      *
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
     public function updateAll(array $attributes): bool
     {
@@ -529,7 +550,7 @@ class ActiveQuery
      *
      * @param string $activeRecordClass the active record model class
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function getActiveRecords(string $activeRecordClass): array
     {

@@ -86,7 +86,7 @@ class Collection implements Iterator
     public function getTotalCount(string $field = '*'): int
     {
         if ($this->totalCount === null) {
-            $this->totalCount = $this->query->count($field);
+            $this->totalCount = $this->query->countSelect($field);
         }
         return $this->totalCount;
     }
