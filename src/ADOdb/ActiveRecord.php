@@ -40,6 +40,9 @@ class ActiveRecord extends \ADODB_Active_Record
     /** @var array Dirty attributes */
     protected array $dirtyAttributes = [];
 
+    /** @var bool Determine the model is recently created. */
+    protected bool $wasRecentlyCreated = false;
+
     /**
      * @var array Attributes casts. Supported casts int, bool, float, string, array
      *
@@ -179,6 +182,16 @@ class ActiveRecord extends \ADODB_Active_Record
     public function isNewRecord(): bool
     {
         return !$this->exists();
+    }
+
+    /**
+     * Determine the current model is recently created.
+     *
+     * @return bool
+     */
+    public function wasRecentlyCreated(): bool
+    {
+        return $this->wasRecentlyCreated;
     }
 
     /**
@@ -400,6 +413,7 @@ class ActiveRecord extends \ADODB_Active_Record
                     $this->{$this->primaryKey} = DB::use($this->_dbat)->insert_Id($this->_table);
                 }
                 $this->refresh();
+                $this->wasRecentlyCreated = true;
             }
             return $status;
         }
