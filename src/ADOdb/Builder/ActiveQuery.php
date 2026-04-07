@@ -2,6 +2,7 @@
 
 namespace Simsoft\ADOdb\Builder;
 
+use ADORecordSet;
 use Exception;
 use Simsoft\ADOdb\ActiveRecord;
 use Simsoft\ADOdb\Collection;
@@ -70,6 +71,8 @@ class ActiveQuery
     /** @var null|int The offset value */
     protected ?int $offset = null;
 
+    /** @var array Joined tables' alias */
+    protected array $joinAlias = [];
 
     /**
      * Constructor.
@@ -132,18 +135,16 @@ class ActiveQuery
 
     /**
      * Enable debug mode.
-     *
-     * @param bool $enabled Enable debug mode. Default: true.
      */
-    public function debug(bool $enabled = true): self
+    public function dd(): self
     {
-        $this->debugMode = $enabled;
+        $this->debugMode = true;
 
         return $this;
     }
 
     /**
-     * Generate conditions SQL statement only, without SELECT, FROM.
+     * Generate a conditions SQL statement only, without SELECT, FROM.
      *
      * @param bool $return set to generate conditions SQL statement
      */
@@ -155,7 +156,7 @@ class ActiveQuery
     }
 
     /**
-     * Use complete SQL statement for the query execution.
+     * Use a complete SQL statement for the query execution.
      *
      * WARNING!!! This feature is not secured from SQL injection.
      *
@@ -689,8 +690,10 @@ class ActiveQuery
      * @param string|array  $table The table name
      * @param array<string> $on    The matching attributes. ['join_table_attribute' => 'main_table_attribute']
      * @param string        $type  Join type. LEFT, RIGHT, INNER, OUTER, etc
+     * @param string|null $via The via table name.
+     * @return $this
      */
-    public function join(string|array $table, array $on = [], string $type = 'INNER'): self
+    public function join(string|array $table, array $on = [], string $type = 'INNER', ?string $via = null): self
     {
         if (is_array($table)) {
             $alias = array_key_first($table);
@@ -707,24 +710,29 @@ class ActiveQuery
         $foreignKey = array_key_first($on);
         $localKey = current($on);
 
+        $this->joinAlias[$table] = $alias;
+        $viaAlias = $via ? ($this->joinAlias[$via] ?? $via) : null;
+
         if ($table === $alias) {
-            $this->joins[] = "{$join} `{$table}` ON `{$table}`.`{$foreignKey}` = " . $this->qualifier($localKey);
+            $this->joins[] = "{$join} `{$table}` ON `{$table}`.`{$foreignKey}` = " . $this->qualifier($localKey, alias: $viaAlias);
         } else {
-            $this->joins[] = "{$join} `{$table}` AS `{$alias}` ON `{$alias}`.`{$foreignKey}` = " . $this->qualifier($localKey);
+            $this->joins[] = "{$join} `{$table}` AS `{$alias}` ON `{$alias}`.`{$foreignKey}` = " . $this->qualifier($localKey, alias: $viaAlias);
         }
 
         return $this;
     }
 
     /**
-     * Cross join table.
+     * Cross-join table.
      *
      * @param string|array  $table the join table
      * @param array<string> $on    The matching attributes. ['join_table_attribute' => 'main_table_attribute']
+     * @param string|null $via The via table name.
+     * @return $this
      */
-    public function crossJoin(string|array $table, array $on = []): self
+    public function crossJoin(string|array $table, array $on = [], ?string $via = null): self
     {
-        return $this->join($table, $on, 'CROSS');
+        return $this->join($table, $on, 'CROSS', via: $via);
     }
 
     /**
@@ -732,10 +740,12 @@ class ActiveQuery
      *
      * @param string|array  $table the join table
      * @param array<string> $on    The matching attributes. ['join_table_attribute' => 'main_table_attribute']
+     * @param string|null $via The via table name.
+     * @return $this
      */
-    public function leftJoin(string|array $table, array $on = []): self
+    public function leftJoin(string|array $table, array $on = [], ?string $via = null): self
     {
-        return $this->join($table, $on, 'LEFT');
+        return $this->join($table, $on, 'LEFT', via: $via);
     }
 
     /**
@@ -743,10 +753,12 @@ class ActiveQuery
      *
      * @param string|array  $table the join table
      * @param array<string> $on    The matching attributes. ['join_table_attribute' => 'main_table_attribute']
+     * @param string|null $via The via table name.
+     * @return $this
      */
-    public function rightJoin(string|array $table, array $on = []): self
+    public function rightJoin(string|array $table, array $on = [], ?string $via = null): self
     {
-        return $this->join($table, $on, 'RIGHT');
+        return $this->join($table, $on, 'RIGHT', via: $via);
     }
 
     /**
@@ -754,8 +766,10 @@ class ActiveQuery
      *
      * @param string        $table the join table
      * @param array<string> $on    The matching attributes. ['join_table_attribute' => 'main_table_attribute']
+     * @param string|null $via The via table name.
+     * @return $this
      */
-    public function leftOuterJoin(string $table, array $on = []): self
+    public function leftOuterJoin(string $table, array $on = [], ?string $via = null): self
     {
         return $this->join($table, $on, 'LEFT OUTER');
     }
@@ -765,10 +779,12 @@ class ActiveQuery
      *
      * @param string        $table the join table
      * @param array<string> $on    The matching attributes. ['join_table_attribute' => 'main_table_attribute']
+     * @param string|null $via The via table name.
+     * @return $this
      */
-    public function rightOuterJoin(string $table, array $on = []): self
+    public function rightOuterJoin(string $table, array $on = [], ?string $via = null): self
     {
-        return $this->join($table, $on, 'RIGHT OUTER');
+        return $this->join($table, $on, 'RIGHT OUTER', via: $via);
     }
 
     /**
@@ -792,20 +808,25 @@ class ActiveQuery
      *
      * @param string $attribute the attribute name
      * @param bool   $isTable   whether the $attribute is a table name
+     * @param string|null $alias Set alias.
      *
      * @return string the qualified name
      */
-    public function qualifier(string $attribute, bool $isTable = false): string
+    public function qualifier(string $attribute, bool $isTable = false, ?string $alias = null): string
     {
         if ($isTable) {
             return $this->database ? "`{$this->database}`.`{$attribute}`" : "`{$attribute}`";
         }
 
-        if ($attribute === '*') {
-            return $this->alias === null ? $attribute : "`{$this->alias}`.{$attribute}";
+        if ($alias === null) {
+            $alias = $this->alias;
         }
 
-        return $this->alias === null ? "`{$attribute}`" : "`{$this->alias}`.`{$attribute}`";
+        if ($attribute === '*') {
+            return $alias === null ? $attribute : "`{$alias}`.{$attribute}";
+        }
+
+        return $alias === null ? "`{$attribute}`" : "`{$alias}`.`{$attribute}`";
     }
 
     /**
